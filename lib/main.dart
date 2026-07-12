@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_chain_fe/features/auth/views/splash_screen.dart';
+import 'package:pharmacy_chain_fe/core/routes/app_router.dart';
 
 void main() {
   runApp(const PharmaCareApp());
@@ -10,7 +10,7 @@ class PharmaCareApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'PharmaCare – Quản lý chuỗi nhà thuốc',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -21,7 +21,7 @@ class PharmaCareApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Roboto',
       ),
-      home: const SplashScreen(),
+      routerConfig: AppRouter.router,
     );
   }
 }

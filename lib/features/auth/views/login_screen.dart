@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_chain_fe/core/routes/route_helper.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pharmacy_chain_fe/features/auth/controllers/login_controller.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -83,7 +83,18 @@ class _LoginScreenState extends State<LoginScreen>
         duration: const Duration(seconds: 2),
       ),
     );
-    RouteHelper.navigateBasedOnRole(context, role);
+    final normalizedRole = role.toLowerCase();
+    if (normalizedRole == 'admin') {
+      context.go('/admin');
+    } else if (normalizedRole == 'branchmanager' || normalizedRole == 'branch manager') {
+      context.go('/manager');
+    } else if (normalizedRole == 'pharmacist') {
+      context.go('/pharmacist');
+    } else if (normalizedRole == 'customer') {
+      context.go('/customer');
+    } else {
+      context.go('/login');
+    }
   }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
-import 'package:pharmacy_chain_fe/core/routes/route_helper.dart';
-import 'package:pharmacy_chain_fe/features/auth/views/login_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -37,13 +36,21 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       );
       
-      RouteHelper.navigateBasedOnRole(context, role!);
+      final normalizedRole = role?.toLowerCase() ?? '';
+      if (normalizedRole == 'admin') {
+        context.go('/admin');
+      } else if (normalizedRole == 'branchmanager' || normalizedRole == 'branch manager') {
+        context.go('/manager');
+      } else if (normalizedRole == 'pharmacist') {
+        context.go('/pharmacist');
+      } else if (normalizedRole == 'customer') {
+        context.go('/customer');
+      } else {
+        context.go('/login');
+      }
     } else {
       // Chưa có token -> Về màn hình Đăng nhập
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      context.go('/login');
     }
   }
 
