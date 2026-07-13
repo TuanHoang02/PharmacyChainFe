@@ -26,4 +26,16 @@ class AuthService {
       throw Exception(message);
     }
   }
+
+  Future<void> logout() async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.logout}');
+    try {
+      await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+    } catch (_) {
+      // Ignore errors for logout since local storage will be cleared anyway
+    }
+  }
 }
