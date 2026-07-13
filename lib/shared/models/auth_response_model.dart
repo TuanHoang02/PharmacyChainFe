@@ -11,17 +11,3 @@ class AuthResponseModel {
     );
   }
 }
-
-class BaseApiResponse<T> {
-  final bool success;
-  final String message;
-  final T? data;
-  final String timestamp;
-
-  BaseApiResponse({
-    required this.success,
-    required this.message,
-    this.data,
-    required this.timestamp,
-  });
-}

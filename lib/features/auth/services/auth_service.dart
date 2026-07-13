@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pharmacy_chain_fe/core/constants/api_constants.dart';
 import 'package:pharmacy_chain_fe/shared/models/auth_response_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/base_api_response.dart';
 
 class AuthService {
   Future<AuthResponseModel> login({
@@ -12,17 +13,22 @@ class AuthService {
 
     final response = await http.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode({'email': email, 'password': password}),
     );
 
     final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+    final apiResponse = BaseApiResponse<AuthResponseModel>.fromJson(
+      responseBody,
+      (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+    );
 
-    if (response.statusCode == 200 && responseBody['success'] == true) {
-      final data = responseBody['data'] as Map<String, dynamic>;
-      return AuthResponseModel.fromJson(data);
+    if (response.statusCode == 200 && apiResponse.success && apiResponse.data != null) {
+      return apiResponse.data!;
     } else {
-      final message = responseBody['message'] ?? 'Đăng nhập thất bại.';
+      final message = apiResponse.message.isNotEmpty
+          ? apiResponse.message
+          : 'Đăng nhập thất bại.';
       throw Exception(message);
     }
   }
@@ -32,7 +38,7 @@ class AuthService {
     try {
       await http.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
       );
     } catch (_) {
       // Ignore errors for logout since local storage will be cleared anyway
