@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pharmacy_chain_fe/features/auth/controllers/login_controller.dart';
+import 'package:pharmacy_chain_fe/features/auth/controllers/register_controller.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _RegisterScreenState extends State<RegisterScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final LoginController _controller = LoginController();
+  final RegisterController _controller = RegisterController();
 
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -55,10 +55,10 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final role = await _controller.login();
+    final role = await _controller.register();
 
     if (!mounted) return;
 
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen>
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white),
             const SizedBox(width: 8),
-            Text('Đăng nhập thành công! Vai trò: $role'),
+            Text('Đăng ký thành công! Đang đăng nhập...'),
           ],
         ),
         backgroundColor: const Color(0xFF00C48C),
@@ -83,14 +83,10 @@ class _LoginScreenState extends State<LoginScreen>
         duration: const Duration(seconds: 2),
       ),
     );
+    
+    // According to AppRouter, if role is Customer, we go to /customer
     final normalizedRole = role.toLowerCase();
-    if (normalizedRole == 'admin') {
-      context.go('/admin');
-    } else if (normalizedRole == 'branchmanager' || normalizedRole == 'branch manager') {
-      context.go('/manager');
-    } else if (normalizedRole == 'pharmacist') {
-      context.go('/pharmacist');
-    } else if (normalizedRole == 'customer') {
+    if (normalizedRole == 'customer') {
       context.go('/customer');
     } else {
       context.go('/login');
@@ -135,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: SlideTransition(
@@ -143,15 +139,12 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 24),
-
-                        // ── Logo & Brand ─────────────────────────────
+                        // ── Brand Section ─────────────────────────────
                         _buildBrandSection(),
-                        const SizedBox(height: 40),
-
-                        // ── Login Card ───────────────────────────────
-                        _buildLoginCard(),
                         const SizedBox(height: 32),
+
+                        // ── Register Card ───────────────────────────────
+                        _buildRegisterCard(),
                       ],
                     ),
                   ),
@@ -167,21 +160,20 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildBrandSection() {
     return Column(
       children: [
-        // Logo container
         Container(
-          width: 88,
-          height: 88,
+          width: 72,
+          height: 72,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF1E88E5), Color(0xFF00C48C)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1E88E5).withAlpha(100),
-                blurRadius: 24,
+                blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -189,34 +181,24 @@ class _LoginScreenState extends State<LoginScreen>
           child: const Icon(
             Icons.local_pharmacy_rounded,
             color: Colors.white,
-            size: 44,
+            size: 36,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         const Text(
-          'PharmaCare',
+          'Tạo tài khoản mới',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 32,
+            fontSize: 24,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Hệ thống quản lý chuỗi nhà thuốc',
-          style: TextStyle(
-            color: Colors.white.withAlpha(150),
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0.2,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLoginCard() {
+  Widget _buildRegisterCard() {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF111F38),
@@ -239,23 +221,22 @@ class _LoginScreenState extends State<LoginScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Đăng nhập',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-              ),
+            // ── Full Name field ───────────────────────────────────────
+            _buildLabel('Họ và Tên'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _controller.fullNameController,
+              hint: 'Nguyễn Văn A',
+              prefixIcon: Icons.person_outline,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Họ tên không được để trống.';
+                }
+                return null;
+              },
+              onChanged: (_) => _controller.clearError(),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Vui lòng nhập thông tin tài khoản của bạn',
-              style: TextStyle(
-                color: Colors.white.withAlpha(120),
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 16),
 
             // ── Email field ───────────────────────────────────────
             _buildLabel('Email'),
@@ -277,7 +258,25 @@ class _LoginScreenState extends State<LoginScreen>
               },
               onChanged: (_) => _controller.clearError(),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            
+            // ── Phone field ───────────────────────────────────────
+            _buildLabel('Số điện thoại'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _controller.phoneController,
+              hint: '0912345678',
+              prefixIcon: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Số điện thoại không được để trống.';
+                }
+                return null;
+              },
+              onChanged: (_) => _controller.clearError(),
+            ),
+            const SizedBox(height: 16),
 
             // ── Password field ────────────────────────────────────
             _buildLabel('Mật khẩu'),
@@ -301,26 +300,43 @@ class _LoginScreenState extends State<LoginScreen>
                 if (value == null || value.isEmpty) {
                   return 'Mật khẩu không được để trống.';
                 }
+                if (value.length < 6) {
+                  return 'Mật khẩu phải có ít nhất 6 ký tự.';
+                }
                 return null;
               },
               onChanged: (_) => _controller.clearError(),
             ),
-            const SizedBox(height: 12),
-
-            // ── Forgot password ───────────────────────────────────
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
-                onTap: () {}, // TODO: Forgot password flow
-                child: Text(
-                  'Quên mật khẩu?',
-                  style: TextStyle(
-                    color: const Color(0xFF60ABFF),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
+            const SizedBox(height: 16),
+            
+            // ── Confirm Password field ────────────────────────────────────
+            _buildLabel('Xác nhận mật khẩu'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _controller.confirmPasswordController,
+              hint: '••••••••',
+              prefixIcon: Icons.lock_outline_rounded,
+              obscureText: _controller.obscureConfirmPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _controller.obscureConfirmPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: Colors.white.withAlpha(100),
+                  size: 20,
                 ),
+                onPressed: _controller.toggleConfirmPasswordVisibility,
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Vui lòng xác nhận mật khẩu.';
+                }
+                if (value != _controller.passwordController.text) {
+                  return 'Mật khẩu xác nhận không khớp.';
+                }
+                return null;
+              },
+              onChanged: (_) => _controller.clearError(),
             ),
             const SizedBox(height: 24),
 
@@ -330,25 +346,27 @@ class _LoginScreenState extends State<LoginScreen>
               const SizedBox(height: 16),
             ],
 
-            // ── Login button ──────────────────────────────────────
-            _buildLoginButton(),
+            // ── Register button ──────────────────────────────────────
+            _buildRegisterButton(),
             const SizedBox(height: 24),
+            
+            // ── Back to Login ──────────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Chưa có tài khoản?',
+                  'Đã có tài khoản?',
                   style: TextStyle(
                     color: Colors.white.withAlpha(150),
                     fontSize: 14,
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push('/register'),
+                  onPressed: () => context.pop(),
                   child: const Text(
-                    'Đăng ký ngay',
+                    'Đăng nhập ngay',
                     style: TextStyle(
-                      color: Color(0xFF60ABFF),
+                      color: Color(0xFF00C48C),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -452,12 +470,12 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildRegisterButton() {
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: _controller.isLoading ? null : _handleLogin,
+        onPressed: _controller.isLoading ? null : _handleRegister,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
@@ -508,10 +526,10 @@ class _LoginScreenState extends State<LoginScreen>
                 : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.login_rounded, color: Colors.white, size: 20),
+                      Icon(Icons.person_add_rounded, color: Colors.white, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Đăng nhập',
+                        'Đăng ký',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,

@@ -4,6 +4,7 @@ import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
 
 import 'package:pharmacy_chain_fe/features/auth/views/splash_screen.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/login_screen.dart';
+import 'package:pharmacy_chain_fe/features/auth/views/register_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
@@ -30,7 +31,7 @@ class AppRouter {
       final isLoggedIn = token != null && token.isNotEmpty;
       final location = state.uri.toString();
       
-      final isGoingToAuth = location == '/login';
+      final isGoingToAuth = location == '/login' || location == '/register';
       final isSplash = location == '/splash';
 
       if (!isLoggedIn && !isGoingToAuth && !isSplash) {
@@ -72,6 +73,10 @@ class AppRouter {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       
       // Admin Routes
