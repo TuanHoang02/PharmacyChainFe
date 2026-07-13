@@ -27,7 +27,8 @@ class AppRouter {
     
     redirect: (BuildContext context, GoRouterState state) async {
       final token = await _storageService.getToken();
-      final role = await _storageService.getRole();
+      final rawRole = await _storageService.getRole();
+      final role = rawRole?.toLowerCase();
       
       final isLoggedIn = token != null && token.isNotEmpty;
       final location = state.uri.toString();
