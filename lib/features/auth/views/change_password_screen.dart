@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pharmacy_chain_fe/features/auth/controllers/register_controller.dart';
+import 'package:pharmacy_chain_fe/features/auth/controllers/change_password_controller.dart';
+import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
+import 'package:pharmacy_chain_fe/features/auth/services/auth_service.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen>
+class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final RegisterController _controller = RegisterController();
+  final ChangePasswordController _controller = ChangePasswordController();
 
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -55,40 +57,39 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
-  Future<void> _handleRegister() async {
+  Future<void> _handleChangePassword() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final role = await _controller.register();
+    final success = await _controller.changePassword();
 
     if (!mounted) return;
 
-    if (role != null) {
-      _showSuccessAndNavigate(role);
+    if (success) {
+      _showSuccessAndNavigate();
     }
   }
 
-  void _showSuccessAndNavigate(String role) {
+  Future<void> _showSuccessAndNavigate() async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white),
-            const SizedBox(width: 8),
-            Text('Đăng ký thành công! Đang đăng nhập...'),
+          children: const [
+            Icon(Icons.check_circle_rounded, color: Colors.white),
+            SizedBox(width: 8),
+            Text('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.'),
           ],
         ),
         backgroundColor: const Color(0xFF00C48C),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
-
-    // According to AppRouter, if role is Customer, we go to /customer
-    final normalizedRole = role.toLowerCase();
-    if (normalizedRole == 'customer') {
-      context.go('/customer');
-    } else {
+    
+    // Auto logout after successful password change
+    await AuthService().logout();
+    await LocalStorageService().clearAll();
+    if (mounted) {
       context.go('/login');
     }
   }
@@ -99,6 +100,15 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           // ── Background gradient blobs ──────────────────────────────────
@@ -118,23 +128,12 @@ class _RegisterScreenState extends State<RegisterScreen>
               size: 240,
             ),
           ),
-          Positioned(
-            top: size.height * 0.4,
-            right: -40,
-            child: _GlowBlob(
-              color: const Color(0xFF7C3AED).withAlpha(35),
-              size: 180,
-            ),
-          ),
 
           // ── Main content ───────────────────────────────────────────────
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 24,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: SlideTransition(
@@ -146,8 +145,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                         _buildBrandSection(),
                         const SizedBox(height: 32),
 
-                        // ── Register Card ───────────────────────────────
-                        _buildRegisterCard(),
+                        // ── Form Card ───────────────────────────────
+                        _buildFormCard(),
                       ],
                     ),
                   ),
@@ -182,14 +181,14 @@ class _RegisterScreenState extends State<RegisterScreen>
             ],
           ),
           child: const Icon(
-            Icons.local_pharmacy_rounded,
+            Icons.lock_reset_rounded,
             color: Colors.white,
             size: 36,
           ),
         ),
         const SizedBox(height: 16),
         const Text(
-          'Tạo tài khoản mới',
+          'Đổi mật khẩu',
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -201,12 +200,15 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  Widget _buildRegisterCard() {
+  Widget _buildFormCard() {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF111F38),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withAlpha(18), width: 1.5),
+        border: Border.all(
+          color: Colors.white.withAlpha(18),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(80),
@@ -221,88 +223,27 @@ class _RegisterScreenState extends State<RegisterScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Full Name field ───────────────────────────────────────
-            _buildLabel('Họ và Tên'),
+            // ── Current Password field ────────────────────────────────────
+            _buildLabel('Mật khẩu hiện tại'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.fullNameController,
-              hint: 'Nguyễn Văn A',
-              prefixIcon: Icons.person_outline,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Họ tên không được để trống.';
-                }
-                return null;
-              },
-              onChanged: (_) => _controller.clearError(),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Email field ───────────────────────────────────────
-            _buildLabel('Email'),
-            const SizedBox(height: 8),
-            _buildTextField(
-              controller: _controller.emailController,
-              hint: 'example@gmail.com',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Email không được để trống.';
-                }
-                if (!RegExp(
-                  r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$',
-                ).hasMatch(value.trim())) {
-                  return 'Email không đúng định dạng.';
-                }
-                return null;
-              },
-              onChanged: (_) => _controller.clearError(),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Phone field ───────────────────────────────────────
-            _buildLabel('Số điện thoại'),
-            const SizedBox(height: 8),
-            _buildTextField(
-              controller: _controller.phoneController,
-              hint: '0912345678',
-              prefixIcon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Số điện thoại không được để trống.';
-                }
-                return null;
-              },
-              onChanged: (_) => _controller.clearError(),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Password field ────────────────────────────────────
-            _buildLabel('Mật khẩu'),
-            const SizedBox(height: 8),
-            _buildTextField(
-              controller: _controller.passwordController,
+              controller: _controller.currentPasswordController,
               hint: '••••••••',
               prefixIcon: Icons.lock_outline_rounded,
-              obscureText: _controller.obscurePassword,
+              obscureText: _controller.obscureCurrentPassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _controller.obscurePassword
+                  _controller.obscureCurrentPassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: Colors.white.withAlpha(100),
                   size: 20,
                 ),
-                onPressed: _controller.togglePasswordVisibility,
+                onPressed: _controller.toggleCurrentPasswordVisibility,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Mật khẩu không được để trống.';
-                }
-                if (value.length < 6) {
-                  return 'Mật khẩu phải có ít nhất 6 ký tự.';
+                  return 'Vui lòng nhập mật khẩu hiện tại.';
                 }
                 return null;
               },
@@ -310,13 +251,47 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
             const SizedBox(height: 16),
 
-            // ── Confirm Password field ────────────────────────────────────
-            _buildLabel('Xác nhận mật khẩu'),
+            // ── New Password field ────────────────────────────────────
+            _buildLabel('Mật khẩu mới'),
+            const SizedBox(height: 8),
+            _buildTextField(
+              controller: _controller.newPasswordController,
+              hint: '••••••••',
+              prefixIcon: Icons.lock_reset_rounded,
+              obscureText: _controller.obscureNewPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _controller.obscureNewPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: Colors.white.withAlpha(100),
+                  size: 20,
+                ),
+                onPressed: _controller.toggleNewPasswordVisibility,
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Mật khẩu mới không được để trống.';
+                }
+                if (value.length < 6) {
+                  return 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+                }
+                if (value == _controller.currentPasswordController.text) {
+                  return 'Mật khẩu mới không được trùng mật khẩu cũ.';
+                }
+                return null;
+              },
+              onChanged: (_) => _controller.clearError(),
+            ),
+            const SizedBox(height: 16),
+            
+            // ── Confirm New Password field ────────────────────────────────────
+            _buildLabel('Xác nhận mật khẩu mới'),
             const SizedBox(height: 8),
             _buildTextField(
               controller: _controller.confirmPasswordController,
               hint: '••••••••',
-              prefixIcon: Icons.lock_outline_rounded,
+              prefixIcon: Icons.lock_reset_rounded,
               obscureText: _controller.obscureConfirmPassword,
               suffixIcon: IconButton(
                 icon: Icon(
@@ -330,9 +305,9 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Vui lòng xác nhận mật khẩu.';
+                  return 'Vui lòng xác nhận mật khẩu mới.';
                 }
-                if (value != _controller.passwordController.text) {
+                if (value != _controller.newPasswordController.text) {
                   return 'Mật khẩu xác nhận không khớp.';
                 }
                 return null;
@@ -347,34 +322,8 @@ class _RegisterScreenState extends State<RegisterScreen>
               const SizedBox(height: 16),
             ],
 
-            // ── Register button ──────────────────────────────────────
-            _buildRegisterButton(),
-            const SizedBox(height: 24),
-
-            // ── Back to Login ──────────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Đã có tài khoản?',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(150),
-                    fontSize: 14,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.pop(),
-                  child: const Text(
-                    'Đăng nhập ngay',
-                    style: TextStyle(
-                      color: Color(0xFF00C48C),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // ── Submit button ──────────────────────────────────────
+            _buildSubmitButton(),
           ],
         ),
       ),
@@ -413,18 +362,12 @@ class _RegisterScreenState extends State<RegisterScreen>
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.white.withAlpha(60), fontSize: 14),
-        prefixIcon: Icon(
-          prefixIcon,
-          color: Colors.white.withAlpha(100),
-          size: 20,
-        ),
+        prefixIcon: Icon(prefixIcon, color: Colors.white.withAlpha(100), size: 20),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Colors.white.withAlpha(10),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: Colors.white.withAlpha(25)),
@@ -445,7 +388,10 @@ class _RegisterScreenState extends State<RegisterScreen>
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFFF5252), width: 1.5),
         ),
-        errorStyle: const TextStyle(color: Color(0xFFFF7070), fontSize: 12),
+        errorStyle: const TextStyle(
+          color: Color(0xFFFF7070),
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -460,11 +406,8 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.error_outline_rounded,
-            color: Color(0xFFFF7070),
-            size: 18,
-          ),
+          const Icon(Icons.error_outline_rounded,
+              color: Color(0xFFFF7070), size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -477,12 +420,12 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
   }
 
-  Widget _buildRegisterButton() {
+  Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: _controller.isLoading ? null : _handleRegister,
+        onPressed: _controller.isLoading ? null : _handleChangePassword,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
@@ -533,14 +476,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                 : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.person_add_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      Icon(Icons.save_rounded, color: Colors.white, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Đăng ký',
+                        'Đổi mật khẩu',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -569,7 +508,10 @@ class _GlowBlob extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
     );
   }
 }

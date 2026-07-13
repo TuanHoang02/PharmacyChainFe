@@ -5,6 +5,7 @@ import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/splash_screen.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/login_screen.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/register_screen.dart';
+import 'package:pharmacy_chain_fe/features/auth/views/change_password_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
@@ -77,6 +78,10 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       
       // Admin Routes
