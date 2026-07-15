@@ -4,7 +4,7 @@ import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
 
 import 'package:pharmacy_chain_fe/features/auth/views/splash_screen.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/login_screen.dart';
-import 'package:pharmacy_chain_fe/features/auth/views/register_screen.dart';
+
 import 'package:pharmacy_chain_fe/features/auth/views/change_password_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
@@ -16,9 +16,11 @@ import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_h
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
 
-import 'package:pharmacy_chain_fe/features/customer/views/customer_main_layout.dart';
-import 'package:pharmacy_chain_fe/features/customer/views/customer_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
 
+import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
 
@@ -33,7 +35,7 @@ class AppRouter {
       final isLoggedIn = token != null && token.isNotEmpty;
       final location = state.uri.toString();
       
-      final isGoingToAuth = location == '/login' || location == '/register';
+      final isGoingToAuth = location == '/login';
       final isSplash = location == '/splash';
 
       if (!isLoggedIn && !isGoingToAuth && !isSplash) {
@@ -44,7 +46,9 @@ class AppRouter {
         if (role == 'admin') return '/admin';
         if (role == 'branchmanager' || role == 'branch manager') return '/manager';
         if (role == 'pharmacist') return '/pharmacist';
-        if (role == 'customer') return '/customer';
+        if (role == 'operationsmanager' || role == 'operations manager') return '/operations';
+        if (role == 'supplier') return '/supplier';
+
         return '/login';
       }
 
@@ -59,7 +63,10 @@ class AppRouter {
         if (location.startsWith('/pharmacist') && role != 'pharmacist') {
           return '/login';
         }
-        if (location.startsWith('/customer') && role != 'customer') {
+        if (location.startsWith('/operations') && (role != 'operationsmanager' && role != 'operations manager')) {
+          return '/login';
+        }
+        if (location.startsWith('/supplier') && role != 'supplier') {
           return '/login';
         }
       }
@@ -76,10 +83,7 @@ class AppRouter {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(),
-      ),
+
       GoRoute(
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
@@ -142,21 +146,24 @@ class AppRouter {
         ],
       ),
 
-      // Customer Routes
+      // Operations Manager Routes
       ShellRoute(
-        builder: (context, state, child) => CustomerMainLayout(child: child),
+        builder: (context, state, child) => OperationsManagerMainLayout(child: child),
         routes: [
           GoRoute(
-            path: '/customer',
-            builder: (context, state) => const CustomerHomeScreen(),
+            path: '/operations',
+            builder: (context, state) => const OperationsManagerHomeScreen(),
           ),
+        ],
+      ),
+
+      // Supplier Routes
+      ShellRoute(
+        builder: (context, state, child) => SupplierMainLayout(child: child),
+        routes: [
           GoRoute(
-            path: '/customer/orders',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Customer Orders'))),
-          ),
-          GoRoute(
-            path: '/customer/profile',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Customer Profile'))),
+            path: '/supplier',
+            builder: (context, state) => const SupplierHomeScreen(),
           ),
         ],
       ),

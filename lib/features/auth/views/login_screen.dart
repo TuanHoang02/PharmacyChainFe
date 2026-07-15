@@ -90,9 +90,10 @@ class _LoginScreenState extends State<LoginScreen>
       context.go('/manager');
     } else if (normalizedRole == 'pharmacist') {
       context.go('/pharmacist');
-    } else if (normalizedRole == 'customer') {
-      context.go('/customer');
-    } else {
+    } else if (normalizedRole == 'operationsmanager' || normalizedRole == 'operations manager') {
+      context.go('/operations');
+    } else if (normalizedRole == 'supplier') {
+      context.go('/supplier');
       context.go('/login');
     }
   }
@@ -333,29 +334,6 @@ class _LoginScreenState extends State<LoginScreen>
             // ── Login button ──────────────────────────────────────
             _buildLoginButton(),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Chưa có tài khoản?',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(150),
-                    fontSize: 14,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => context.push('/register'),
-                  child: const Text(
-                    'Đăng ký ngay',
-                    style: TextStyle(
-                      color: Color(0xFF60ABFF),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),

@@ -43,9 +43,10 @@ class _SplashScreenState extends State<SplashScreen> {
         context.go('/manager');
       } else if (normalizedRole == 'pharmacist') {
         context.go('/pharmacist');
-      } else if (normalizedRole == 'customer') {
-        context.go('/customer');
-      } else {
+      } else if (normalizedRole == 'operationsmanager' || normalizedRole == 'operations manager') {
+        context.go('/operations');
+      } else if (normalizedRole == 'supplier') {
+        context.go('/supplier');
         context.go('/login');
       }
     } else {

@@ -4,7 +4,6 @@ class ApiConstants {
   // Use 'http://10.0.2.2:5003' for Android emulator
 
   static const String login = '/api/Auth/login';
-  static const String register = '/api/Auth/register';
   static const String logout = '/api/Auth/logout';
   static const String changePassword = '/api/Auth/change-password';
 }

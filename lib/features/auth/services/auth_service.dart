@@ -36,40 +36,6 @@ class AuthService {
     }
   }
 
-  Future<AuthResponseModel> register({
-    required String fullName,
-    required String email,
-    required String password,
-    required String phone,
-  }) async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.register}');
-
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode({
-        'fullName': fullName,
-        'email': email,
-        'password': password,
-        'phone': phone,
-      }),
-    );
-
-    final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-    final apiResponse = BaseApiResponse<AuthResponseModel>.fromJson(
-      responseBody,
-      (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
-    );
-
-    if (response.statusCode == 200 && apiResponse.success && apiResponse.data != null) {
-      return apiResponse.data!;
-    } else {
-      final message = apiResponse.message.isNotEmpty
-          ? apiResponse.message
-          : 'Đăng ký thất bại.';
-      throw Exception(message);
-    }
-  }
 
   Future<void> changePassword({
     required String currentPassword,
