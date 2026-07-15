@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pharmacy_chain_fe/features/auth/controllers/change_password_controller.dart';
 import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
 import 'package:pharmacy_chain_fe/features/auth/services/auth_service.dart';
 
@@ -14,7 +13,18 @@ class ChangePasswordScreen extends StatefulWidget {
 class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final ChangePasswordController _controller = ChangePasswordController();
+  
+  final AuthService _authService = AuthService();
+
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+  String? _errorMessage;
 
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -43,24 +53,79 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
     _fadeController.forward();
     _slideController.forward();
-
-    _controller.addListener(() {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _controller.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _toggleCurrentPasswordVisibility() {
+    setState(() {
+      _obscureCurrentPassword = !_obscureCurrentPassword;
+    });
+  }
+
+  void _toggleNewPasswordVisibility() {
+    setState(() {
+      _obscureNewPassword = !_obscureNewPassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() {
+    setState(() {
+      _obscureConfirmPassword = !_obscureConfirmPassword;
+    });
+  }
+
+  void _clearError() {
+    if (_errorMessage != null) {
+      setState(() {
+        _errorMessage = null;
+      });
+    }
   }
 
   Future<void> _handleChangePassword() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await _controller.changePassword();
+    if (_newPasswordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Mật khẩu xác nhận không khớp.';
+      });
+      return;
+    }
+
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    bool success = false;
+    try {
+      await _authService.changePassword(
+        currentPassword: _currentPasswordController.text,
+        newPassword: _newPasswordController.text,
+      );
+      success = true;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
 
     if (!mounted) return;
 
@@ -227,19 +292,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
             _buildLabel('Mật khẩu hiện tại'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.currentPasswordController,
+              controller: _currentPasswordController,
               hint: '••••••••',
               prefixIcon: Icons.lock_outline_rounded,
-              obscureText: _controller.obscureCurrentPassword,
+              obscureText: _obscureCurrentPassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _controller.obscureCurrentPassword
+                  _obscureCurrentPassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: Colors.white.withAlpha(100),
                   size: 20,
                 ),
-                onPressed: _controller.toggleCurrentPasswordVisibility,
+                onPressed: _toggleCurrentPasswordVisibility,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -247,7 +312,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                 }
                 return null;
               },
-              onChanged: (_) => _controller.clearError(),
+              onChanged: (_) => _clearError(),
             ),
             const SizedBox(height: 16),
 
@@ -255,19 +320,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
             _buildLabel('Mật khẩu mới'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.newPasswordController,
+              controller: _newPasswordController,
               hint: '••••••••',
               prefixIcon: Icons.lock_reset_rounded,
-              obscureText: _controller.obscureNewPassword,
+              obscureText: _obscureNewPassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _controller.obscureNewPassword
+                  _obscureNewPassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: Colors.white.withAlpha(100),
                   size: 20,
                 ),
-                onPressed: _controller.toggleNewPasswordVisibility,
+                onPressed: _toggleNewPasswordVisibility,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -276,12 +341,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                 if (value.length < 6) {
                   return 'Mật khẩu mới phải có ít nhất 6 ký tự.';
                 }
-                if (value == _controller.currentPasswordController.text) {
+                if (value == _currentPasswordController.text) {
                   return 'Mật khẩu mới không được trùng mật khẩu cũ.';
                 }
                 return null;
               },
-              onChanged: (_) => _controller.clearError(),
+              onChanged: (_) => _clearError(),
             ),
             const SizedBox(height: 16),
             
@@ -289,36 +354,36 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
             _buildLabel('Xác nhận mật khẩu mới'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.confirmPasswordController,
+              controller: _confirmPasswordController,
               hint: '••••••••',
               prefixIcon: Icons.lock_reset_rounded,
-              obscureText: _controller.obscureConfirmPassword,
+              obscureText: _obscureConfirmPassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _controller.obscureConfirmPassword
+                  _obscureConfirmPassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: Colors.white.withAlpha(100),
                   size: 20,
                 ),
-                onPressed: _controller.toggleConfirmPasswordVisibility,
+                onPressed: _toggleConfirmPasswordVisibility,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Vui lòng xác nhận mật khẩu mới.';
                 }
-                if (value != _controller.newPasswordController.text) {
+                if (value != _newPasswordController.text) {
                   return 'Mật khẩu xác nhận không khớp.';
                 }
                 return null;
               },
-              onChanged: (_) => _controller.clearError(),
+              onChanged: (_) => _clearError(),
             ),
             const SizedBox(height: 24),
 
             // ── Error message ─────────────────────────────────────
-            if (_controller.errorMessage != null) ...[
-              _buildErrorBanner(_controller.errorMessage!),
+            if (_errorMessage != null) ...[
+              _buildErrorBanner(_errorMessage!),
               const SizedBox(height: 16),
             ],
 
@@ -425,7 +490,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: _controller.isLoading ? null : _handleChangePassword,
+        onPressed: _isLoading ? null : _handleChangePassword,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
@@ -437,7 +502,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         ),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: _controller.isLoading
+            gradient: _isLoading
                 ? LinearGradient(
                     colors: [
                       const Color(0xFF1E88E5).withAlpha(120),
@@ -452,7 +517,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                     end: Alignment.centerRight,
                   ),
             borderRadius: BorderRadius.circular(14),
-            boxShadow: _controller.isLoading
+            boxShadow: _isLoading
                 ? []
                 : [
                     BoxShadow(
@@ -464,7 +529,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           ),
           child: Container(
             alignment: Alignment.center,
-            child: _controller.isLoading
+            child: _isLoading
                 ? const SizedBox(
                     width: 22,
                     height: 22,

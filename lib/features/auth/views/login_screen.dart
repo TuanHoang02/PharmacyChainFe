@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pharmacy_chain_fe/features/auth/controllers/login_controller.dart';
+import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
+import 'package:pharmacy_chain_fe/features/auth/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,7 +13,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final LoginController _controller = LoginController();
+  final AuthService _authService = AuthService();
+  final LocalStorageService _storageService = LocalStorageService();
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  String? _errorMessage;
 
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -41,24 +50,62 @@ class _LoginScreenState extends State<LoginScreen>
 
     _fadeController.forward();
     _slideController.forward();
-
-    _controller.addListener(() {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  void _clearError() {
+    if (_errorMessage != null) {
+      setState(() {
+        _errorMessage = null;
+      });
+    }
   }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final role = await _controller.login();
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    String? role;
+    try {
+      final result = await _authService.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      
+      // Save token and role to local storage
+      await _storageService.saveLoginInfo(result.token, result.role);
+      role = result.role;
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
 
     if (!mounted) return;
 
@@ -94,6 +141,7 @@ class _LoginScreenState extends State<LoginScreen>
       context.go('/operations');
     } else if (normalizedRole == 'supplier') {
       context.go('/supplier');
+    } else {
       context.go('/login');
     }
   }
@@ -262,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen>
             _buildLabel('Email'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.emailController,
+              controller: _emailController,
               hint: 'example@pharmcare.vn',
               prefixIcon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
@@ -276,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen>
                 }
                 return null;
               },
-              onChanged: (_) => _controller.clearError(),
+              onChanged: (_) => _clearError(),
             ),
             const SizedBox(height: 20),
 
@@ -284,19 +332,19 @@ class _LoginScreenState extends State<LoginScreen>
             _buildLabel('Mật khẩu'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _controller.passwordController,
+              controller: _passwordController,
               hint: '••••••••',
               prefixIcon: Icons.lock_outline_rounded,
-              obscureText: _controller.obscurePassword,
+              obscureText: _obscurePassword,
               suffixIcon: IconButton(
                 icon: Icon(
-                  _controller.obscurePassword
+                  _obscurePassword
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: Colors.white.withAlpha(100),
                   size: 20,
                 ),
-                onPressed: _controller.togglePasswordVisibility,
+                onPressed: _togglePasswordVisibility,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -304,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen>
                 }
                 return null;
               },
-              onChanged: (_) => _controller.clearError(),
+              onChanged: (_) => _clearError(),
             ),
             const SizedBox(height: 12),
 
@@ -326,8 +374,8 @@ class _LoginScreenState extends State<LoginScreen>
             const SizedBox(height: 24),
 
             // ── Error message ─────────────────────────────────────
-            if (_controller.errorMessage != null) ...[
-              _buildErrorBanner(_controller.errorMessage!),
+            if (_errorMessage != null) ...[
+              _buildErrorBanner(_errorMessage!),
               const SizedBox(height: 16),
             ],
 
@@ -435,7 +483,7 @@ class _LoginScreenState extends State<LoginScreen>
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: _controller.isLoading ? null : _handleLogin,
+        onPressed: _isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           disabledBackgroundColor: Colors.transparent,
@@ -447,7 +495,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: _controller.isLoading
+            gradient: _isLoading
                 ? LinearGradient(
                     colors: [
                       const Color(0xFF1E88E5).withAlpha(120),
@@ -462,7 +510,7 @@ class _LoginScreenState extends State<LoginScreen>
                     end: Alignment.centerRight,
                   ),
             borderRadius: BorderRadius.circular(14),
-            boxShadow: _controller.isLoading
+            boxShadow: _isLoading
                 ? []
                 : [
                     BoxShadow(
@@ -474,7 +522,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           child: Container(
             alignment: Alignment.center,
-            child: _controller.isLoading
+            child: _isLoading
                 ? const SizedBox(
                     width: 22,
                     height: 22,
