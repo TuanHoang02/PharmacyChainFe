@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen>
   final AuthService _authService = AuthService();
   final LocalStorageService _storageService = LocalStorageService();
 
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -86,12 +86,12 @@ class _LoginScreenState extends State<LoginScreen>
     String? role;
     try {
       final result = await _authService.login(
-        email: _emailController.text.trim(),
+        username: _usernameController.text.trim(),
         password: _passwordController.text,
       );
       
       // Save token and role to local storage
-      await _storageService.saveLoginInfo(result.token, result.role);
+      await _storageService.saveLoginInfo(result.token, result.role, result.refreshToken);
       role = result.role;
     } catch (e) {
       if (mounted) {
@@ -306,21 +306,17 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             const SizedBox(height: 28),
 
-            // ── Email field ───────────────────────────────────────
-            _buildLabel('Email'),
+            // ── Username field ───────────────────────────────────────
+            _buildLabel('Tên đăng nhập'),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _emailController,
-              hint: 'example@pharmcare.vn',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
+              controller: _usernameController,
+              hint: 'Nhập tên đăng nhập',
+              prefixIcon: Icons.person_outline_rounded,
+              keyboardType: TextInputType.text,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Email không được để trống.';
-                }
-                if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
-                    .hasMatch(value.trim())) {
-                  return 'Email không đúng định dạng.';
+                  return 'Tên đăng nhập không được để trống.';
                 }
                 return null;
               },
