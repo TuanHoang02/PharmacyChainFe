@@ -48,10 +48,10 @@ class AppRouter {
       }
 
       if (isLoggedIn && isGoingToAuth) {
-        if (role == 'admin') return '/admin';
-        if (role == 'branchmanager' || role == 'branch manager') return '/manager';
+        if (role == 'administrator') return '/admin';
+        if (role == 'operations manager') return '/operations';
+        if (role == 'branch manager') return '/manager';
         if (role == 'pharmacist') return '/pharmacist';
-        if (role == 'operationsmanager' || role == 'operations manager') return '/operations';
         if (role == 'supplier') return '/supplier';
 
         return '/login';
@@ -59,16 +59,16 @@ class AppRouter {
 
       // Route Guards
       if (isLoggedIn) {
-        if (location.startsWith('/admin') && role != 'admin') {
+        if (location.startsWith('/admin') && role != 'administrator') {
           return '/login';
         }
-        if (location.startsWith('/manager') && (role != 'branchmanager' && role != 'branch manager')) {
+        if (location.startsWith('/operations') && role != 'operations manager') {
+          return '/login';
+        }
+        if (location.startsWith('/manager') && role != 'branch manager') {
           return '/login';
         }
         if (location.startsWith('/pharmacist') && role != 'pharmacist') {
-          return '/login';
-        }
-        if (location.startsWith('/operations') && (role != 'operationsmanager' && role != 'operations manager')) {
           return '/login';
         }
         if (location.startsWith('/supplier') && role != 'supplier') {
