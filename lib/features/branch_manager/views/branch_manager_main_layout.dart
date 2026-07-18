@@ -13,8 +13,11 @@ class BranchManagerMainLayout extends StatelessWidget {
     if (location.startsWith('/manager/inventory')) {
       return 1;
     }
-    if (location.startsWith('/manager/reports')) {
+    if (location.startsWith('/manager/staff')) {
       return 2;
+    }
+    if (location.startsWith('/manager/reports')) {
+      return 3;
     }
     return 0; // default to dashboard
   }
@@ -28,6 +31,9 @@ class BranchManagerMainLayout extends StatelessWidget {
         context.go('/manager/inventory');
         break;
       case 2:
+        context.go('/manager/staff');
+        break;
+      case 3:
         context.go('/manager/reports');
         break;
     }
@@ -37,9 +43,10 @@ class BranchManagerMainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pharmacy Chain'),
+        title: const Text('PharmaCare - Branch Manager'),
         actions: [
           PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle, size: 28),
             onSelected: (value) async {
               if (value == 'change_password') {
                 context.push('/change-password');
@@ -73,25 +80,33 @@ class BranchManagerMainLayout extends StatelessWidget {
                 ),
               ),
             ],
-          )
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: child,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Branch',
+            icon: Icon(Icons.dashboard),
+            label: 'Tổng quan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.inventory),
-            label: 'Inventory',
+            label: 'Kho hàng',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Nhân sự',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
-            label: 'Reports',
+            label: 'Báo cáo',
           ),
         ],
       ),

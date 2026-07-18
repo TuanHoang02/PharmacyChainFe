@@ -1,7 +1,20 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:5003';
-  // Use 'http://localhost:5003' for web/desktop
-  // Use 'http://10.0.2.2:5003' for Android emulator
+  static String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:5003';
+    }
+    try {
+      if (Platform.isAndroid) {
+        return 'http://10.0.2.2:5003'; // Dùng cho máy ảo Android Emulator
+      }
+    } catch (_) {
+      // Bắt ngoại lệ trên nền tảng không hỗ trợ dart:io như Web
+    }
+    return 'http://localhost:5003'; // Dùng cho Windows desktop / iOS
+  }
 
   static const String login = '/api/Auth/login';
   static const String logout = '/api/Auth/logout';
