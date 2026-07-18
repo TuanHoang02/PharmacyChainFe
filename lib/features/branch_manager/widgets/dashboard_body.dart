@@ -176,8 +176,11 @@ class DashboardBody extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.check_circle_outline,
-                    color: Color(0xFF00C48C), size: 20),
+                Icon(
+                  Icons.check_circle_outline,
+                  color: Color(0xFF00C48C),
+                  size: 20,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -189,10 +192,12 @@ class DashboardBody extends StatelessWidget {
             ),
           )
         else
-          ...items.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: DashboardLowStockRow(item: m),
-              )),
+          ...items.map(
+            (m) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: DashboardLowStockRow(item: m),
+            ),
+          ),
       ],
     );
   }
@@ -229,8 +234,11 @@ class DashboardBody extends StatelessWidget {
                   color: const Color(0xFFFFB74D).withAlpha(35),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.assignment_outlined,
-                    color: Color(0xFFFFB74D), size: 20),
+                child: const Icon(
+                  Icons.assignment_outlined,
+                  color: Color(0xFFFFB74D),
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -290,8 +298,11 @@ class _BatchInfoCard extends StatelessWidget {
                   color: const Color(0xFFFFB74D).withAlpha(35),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.layers_outlined,
-                    color: Color(0xFFFFB74D), size: 18),
+                child: const Icon(
+                  Icons.layers_outlined,
+                  color: Color(0xFFFFB74D),
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 8),
               const Expanded(
