@@ -8,4 +8,5 @@ class ApiConstants {
   static const String changePassword = '/api/Auth/change-password';
 
   static const String purchaseOrders = '/api/PurchaseOrders';
+  static const String branchDashboard = '/api/BranchDashboard';
 }
