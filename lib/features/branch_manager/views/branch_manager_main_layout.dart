@@ -10,7 +10,7 @@ class BranchManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/manager/inventory')) {
+    if (location.startsWith('/manager/inventory') || location.startsWith('/manager/medicines')) {
       return 1;
     }
     if (location.startsWith('/manager/reports')) {
@@ -25,7 +25,7 @@ class BranchManagerMainLayout extends StatelessWidget {
         context.go('/manager');
         break;
       case 1:
-        context.go('/manager/inventory');
+        context.go('/manager/medicines');
         break;
       case 2:
         context.go('/manager/reports');

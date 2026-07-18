@@ -9,18 +9,23 @@ import 'package:pharmacy_chain_fe/features/auth/views/change_password_screen.dar
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
-
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
-
+import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_detail_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_create_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_edit_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
-
+import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_detail_screen.dart';
+import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_history_screen.dart';
+import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_invoice_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
-
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
+
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
 
@@ -121,6 +126,30 @@ class AppRouter {
             builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Inventory'))),
           ),
           GoRoute(
+            path: '/manager/medicines',
+            builder: (context, state) => const MedicineListScreen(),
+          ),
+          GoRoute(
+            path: '/manager/medicines/create',
+            builder: (context, state) => const MedicineCreateScreen(),
+          ),
+          GoRoute(
+            path: '/manager/medicines/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'] ?? '';
+              final id = int.tryParse(idStr) ?? 0;
+              return MedicineDetailScreen(medicineId: id);
+            },
+          ),
+          GoRoute(
+            path: '/manager/medicines/:id/edit',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'] ?? '';
+              final id = int.tryParse(idStr) ?? 0;
+              return MedicineEditScreen(medicineId: id);
+            },
+          ),
+          GoRoute(
             path: '/manager/reports',
             builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Reports'))),
           ),
@@ -141,7 +170,27 @@ class AppRouter {
           ),
           GoRoute(
             path: '/pharmacist/medicines',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Pharmacist Medicines'))),
+            builder: (context, state) => const PharmacistMedicineListScreen(),
+          ),
+          GoRoute(
+            path: '/pharmacist/medicines/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'] ?? '';
+              final id = int.tryParse(idStr) ?? 0;
+              return PharmacistMedicineDetailScreen(medicineId: id);
+            },
+          ),
+          GoRoute(
+            path: '/pharmacist/sales',
+            builder: (context, state) => const SalesHistoryScreen(),
+          ),
+          GoRoute(
+            path: '/pharmacist/sales/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'] ?? '';
+              final id = int.tryParse(idStr) ?? 0;
+              return SalesInvoiceDetailScreen(invoiceId: id);
+            },
           ),
         ],
       ),
