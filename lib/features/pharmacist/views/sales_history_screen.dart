@@ -445,6 +445,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
     final formattedPrice = invoice.totalAmount
         .toStringAsFixed(0)
         .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    final isTablet = MediaQuery.of(context).size.width > 600;
 
     return Card(
       color: const Color(0xFF111F38),
@@ -515,7 +516,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   ),
                 ],
               ),
-              const Spacer(),
+              if (isTablet) const Spacer() else const SizedBox(height: 16),
               const Divider(color: Colors.white10, height: 16),
 
               // Footer: Total Amount & Timestamps

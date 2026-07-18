@@ -479,6 +479,7 @@ class _PharmacistMedicineListScreenState extends State<PharmacistMedicineListScr
   }
 
   Widget _buildMedicineCard(MedicineModel medicine) {
+    final isTablet = MediaQuery.of(context).size.width > 600;
     return Card(
       color: const Color(0xFF111F38),
       elevation: 4,
@@ -568,7 +569,7 @@ class _PharmacistMedicineListScreenState extends State<PharmacistMedicineListScr
                   ],
                 ],
               ),
-              const Spacer(),
+              if (isTablet) const Spacer() else const SizedBox(height: 16),
               const Divider(color: Colors.white10),
 
               // Footer: Price
