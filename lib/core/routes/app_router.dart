@@ -13,6 +13,7 @@ import 'package:pharmacy_chain_fe/features/admin/views/user_management_screen.da
 
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
@@ -23,6 +24,8 @@ import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_perfo
 
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/purchase_order_detail_screen.dart';
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
 
@@ -124,7 +127,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/manager/reports',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Reports'))),
+            builder: (context, state) => const BranchReportScreen(),
           ),
         ],
       ),
@@ -170,6 +173,19 @@ class AppRouter {
           GoRoute(
             path: '/supplier',
             builder: (context, state) => const SupplierHomeScreen(),
+          ),
+          GoRoute(
+            path: '/supplier/orders',
+            builder: (context, state) => const PurchaseOrdersScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return PurchaseOrderDetailScreen(orderId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),
