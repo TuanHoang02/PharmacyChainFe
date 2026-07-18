@@ -20,8 +20,6 @@ import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_scre
 
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
-import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_performance_screen.dart';
-
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
@@ -158,10 +156,6 @@ class AppRouter {
           GoRoute(
             path: '/operations',
             builder: (context, state) => const OperationsManagerHomeScreen(),
-          ),
-          GoRoute(
-            path: '/operations/branch-performance',
-            builder: (context, state) => const BranchPerformanceScreen(),
           ),
         ],
       ),
