@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
           backgroundColor: const Color(0xFF00C48C),
         ),
       );
-      
+
       final normalizedRole = role?.toLowerCase() ?? '';
       if (normalizedRole == 'administrator') {
         context.go('/admin');
@@ -100,9 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 40),
-            const CircularProgressIndicator(
-              color: Color(0xFF00C48C),
-            ),
+            const CircularProgressIndicator(color: Color(0xFF00C48C)),
           ],
         ),
       ),

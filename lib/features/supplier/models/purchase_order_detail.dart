@@ -7,6 +7,8 @@ class PurchaseOrderDetail extends PurchaseOrderSummary {
   final String? createdByFullName;
   final DateTime? confirmedAt;
   final List<PurchaseOrderItem> items;
+  final String? supplierResponseNote;
+  final DateTime? deliveredAt;
 
   const PurchaseOrderDetail({
     required super.purchaseOrderId,
@@ -24,6 +26,8 @@ class PurchaseOrderDetail extends PurchaseOrderSummary {
     required this.createdByFullName,
     required this.confirmedAt,
     required this.items,
+    this.supplierResponseNote,
+    this.deliveredAt,
   });
 
   factory PurchaseOrderDetail.fromJson(Map<String, dynamic> json) {
@@ -51,6 +55,10 @@ class PurchaseOrderDetail extends PurchaseOrderSummary {
           ? DateTime.tryParse(json['confirmedAt'] as String)
           : null,
       items: items,
+      supplierResponseNote: json['supplierResponseNote'] as String?,
+      deliveredAt: json['deliveredAt'] != null
+          ? DateTime.tryParse(json['deliveredAt'] as String)
+          : null,
     );
   }
 }

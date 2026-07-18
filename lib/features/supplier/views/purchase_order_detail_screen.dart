@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import 'package:pharmacy_chain_fe/features/supplier/models/purchase_order_detail.dart';
+import 'package:pharmacy_chain_fe/features/supplier/models/medicine_batch_summary.dart';
 import 'package:pharmacy_chain_fe/features/supplier/services/purchase_order_service.dart';
+import 'package:pharmacy_chain_fe/features/supplier/services/medicine_batch_service.dart';
 import 'package:pharmacy_chain_fe/features/supplier/widgets/rejection_reason_dialog.dart';
 
 class PurchaseOrderDetailScreen extends StatefulWidget {
@@ -17,8 +20,10 @@ class PurchaseOrderDetailScreen extends StatefulWidget {
 
 class _PurchaseOrderDetailScreenState extends State<PurchaseOrderDetailScreen> {
   final PurchaseOrderService _service = PurchaseOrderService();
+  final MedicineBatchService _batchService = MedicineBatchService();
 
   PurchaseOrderDetail? _order;
+  List<MedicineBatchSummary> _declaredBatches = [];
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -36,9 +41,14 @@ class _PurchaseOrderDetailScreenState extends State<PurchaseOrderDetailScreen> {
     });
     try {
       final detail = await _service.getOrderDetail(widget.orderId);
+      final batchesResponse = await _batchService.getMedicineBatches(
+        purchaseOrderId: widget.orderId,
+        pageSize: 100,
+      );
       if (!mounted) return;
       setState(() {
         _order = detail;
+        _declaredBatches = batchesResponse.data;
       });
     } catch (e) {
       if (!mounted) return;
@@ -201,7 +211,7 @@ class _PurchaseOrderDetailScreenState extends State<PurchaseOrderDetailScreen> {
           const SizedBox(height: 16),
           _BranchCard(order: order),
           const SizedBox(height: 16),
-          _ItemsCard(order: order),
+          _ItemsCard(order: order, declaredBatches: _declaredBatches),
           if (order.notes != null && order.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
             _NotesCard(notes: order.notes!),
@@ -214,7 +224,12 @@ class _PurchaseOrderDetailScreenState extends State<PurchaseOrderDetailScreen> {
               onReject: _showRejectDialog,
             )
           else
-            _ResponseStatusCard(order: order),
+            _ResponseStatusCard(
+              order: order,
+              allDeclared: _order?.items.every((item) =>
+                  _declaredBatches.any((b) => b.medicineName == item.medicineName)) ?? false,
+              onUpdateStatus: _loadDetail,
+            ),
         ],
       ),
     );
@@ -316,8 +331,14 @@ class _ActionBar extends StatelessWidget {
 
 class _ResponseStatusCard extends StatelessWidget {
   final PurchaseOrderDetail order;
+  final bool allDeclared;
+  final VoidCallback? onUpdateStatus;
 
-  const _ResponseStatusCard({required this.order});
+  const _ResponseStatusCard({
+    required this.order,
+    required this.allDeclared,
+    this.onUpdateStatus,
+  });
 
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
@@ -360,11 +381,121 @@ class _ResponseStatusCard extends StatelessWidget {
               style: const TextStyle(color: Color(0xFFB7CDE5), fontSize: 13),
             ),
           ],
+          if (isAccepted) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.local_shipping_outlined, size: 16, color: Color(0xFF8FA8C9)),
+                const SizedBox(width: 8),
+                const Text(
+                  'Trạng thái giao hàng: ',
+                  style: TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                ),
+                Text(
+                  order.deliveryStatusLabel,
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            if (order.deliveredAt != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.event_available_outlined, size: 16, color: Color(0xFF8FA8C9)),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Thời điểm giao hàng: ',
+                    style: TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                  ),
+                  Text(
+                    _dateFormat.format(order.deliveredAt!.toLocal()),
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ],
+              ),
+            ],
+            if (order.supplierResponseNote != null && order.supplierResponseNote!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.note_alt_outlined, size: 16, color: Color(0xFF8FA8C9)),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Ghi chú giao hàng: ',
+                    style: TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                  ),
+                  Expanded(
+                    child: Text(
+                      order.supplierResponseNote!,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
           if (!isAccepted && order.notes != null && order.notes!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               'Lý do: ${order.notes}',
               style: const TextStyle(color: Color(0xFFFF9090), fontSize: 13),
+            ),
+          ],
+          if (isAccepted && order.deliveryStatus != 'Delivered' && order.deliveryStatus != 'Received') ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  await context.push('/supplier/orders/${order.purchaseOrderId}/delivery-status');
+                  onUpdateStatus?.call();
+                },
+                icon: const Icon(Icons.local_shipping_outlined, color: Colors.white, size: 18),
+                label: const Text(
+                  'Cập nhật giao hàng',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1E88E5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          if (isAccepted && order.deliveryStatus == 'Delivered' && !allDeclared) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  await context.push('/supplier/batches/create?orderId=${order.purchaseOrderId}');
+                  onUpdateStatus?.call();
+                },
+                icon: const Icon(Icons.inventory_2_outlined, color: Colors.white, size: 18),
+                label: const Text(
+                  'Khai báo lô thuốc',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00C48C),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
           ],
         ],
@@ -579,8 +710,9 @@ class _BranchCard extends StatelessWidget {
 
 class _ItemsCard extends StatelessWidget {
   final PurchaseOrderDetail order;
+  final List<MedicineBatchSummary> declaredBatches;
 
-  const _ItemsCard({required this.order});
+  const _ItemsCard({required this.order, required this.declaredBatches});
 
   static final NumberFormat _moneyFormat = NumberFormat.currency(
     locale: 'vi_VN',
@@ -654,6 +786,37 @@ class _ItemsCard extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
+                        if (order.orderStatus == 'Accepted' && order.deliveryStatus == 'Delivered') ...[
+                          const SizedBox(height: 8),
+                          if (declaredBatches.any((b) => b.medicineName == item.medicineName)) ...[
+                            Row(
+                              children: [
+                                const Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF00C48C)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Đã khai báo lô: ${declaredBatches.firstWhere((b) => b.medicineName == item.medicineName).batchNumber}',
+                                  style: const TextStyle(color: Color(0xFF00C48C), fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            TextButton.icon(
+                              onPressed: () {
+                                context.push('/supplier/batches/create?orderId=${order.purchaseOrderId}&detailId=${item.purchaseOrderDetailId}');
+                              },
+                              icon: const Icon(Icons.add_box_outlined, size: 14, color: Color(0xFF00C48C)),
+                              label: const Text(
+                                'Khai báo lô thuốc',
+                                style: TextStyle(color: Color(0xFF00C48C), fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
+                        ],
                       ],
                     ),
                   ),

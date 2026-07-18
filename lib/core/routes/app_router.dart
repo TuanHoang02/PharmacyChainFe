@@ -33,20 +33,25 @@ import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.d
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/purchase_order_detail_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/update_delivery_status_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_detail_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/create_medicine_batch_screen.dart';
+
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
-    
+
     redirect: (BuildContext context, GoRouterState state) async {
       final token = await _storageService.getToken();
       final rawRole = await _storageService.getRole();
       final role = rawRole?.toLowerCase();
-      
+
       final isLoggedIn = token != null && token.isNotEmpty;
       final location = state.uri.toString();
-      
+
       final isGoingToAuth = location == '/login';
       final isSplash = location == '/splash';
 
@@ -69,7 +74,8 @@ class AppRouter {
         if (location.startsWith('/admin') && role != 'administrator') {
           return '/login';
         }
-        if (location.startsWith('/operations') && role != 'operations manager') {
+        if (location.startsWith('/operations') &&
+            role != 'operations manager') {
           return '/login';
         }
         if (location.startsWith('/manager') && role != 'branch manager') {
@@ -85,22 +91,19 @@ class AppRouter {
 
       return null;
     },
-    
+
     routes: [
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
 
       GoRoute(
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
       ),
-      
+
       // Admin Routes
       ShellRoute(
         builder: (context, state, child) => AdminMainLayout(child: child),
@@ -115,14 +118,16 @@ class AppRouter {
           ),
           GoRoute(
             path: '/admin/settings',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Admin Settings'))),
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('Admin Settings'))),
           ),
         ],
       ),
 
       // Branch Manager Routes
       ShellRoute(
-        builder: (context, state, child) => BranchManagerMainLayout(child: child),
+        builder: (context, state, child) =>
+            BranchManagerMainLayout(child: child),
         routes: [
           GoRoute(
             path: '/manager',
@@ -130,7 +135,8 @@ class AppRouter {
           ),
           GoRoute(
             path: '/manager/inventory',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Inventory'))),
+            builder: (context, state) =>
+                const Scaffold(body: Center(child: Text('Manager Inventory'))),
           ),
           GoRoute(
             path: '/manager/medicines',
@@ -173,7 +179,9 @@ class AppRouter {
           ),
           GoRoute(
             path: '/pharmacist/prescriptions',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Pharmacist Prescriptions'))),
+            builder: (context, state) => const Scaffold(
+              body: Center(child: Text('Pharmacist Prescriptions')),
+            ),
           ),
           GoRoute(
             path: '/pharmacist/medicines',
@@ -204,7 +212,8 @@ class AppRouter {
 
       // Operations Manager Routes
       ShellRoute(
-        builder: (context, state, child) => OperationsManagerMainLayout(child: child),
+        builder: (context, state, child) =>
+            OperationsManagerMainLayout(child: child),
         routes: [
           GoRoute(
             path: '/operations',
@@ -234,6 +243,41 @@ class AppRouter {
                 builder: (context, state) {
                   final id = int.parse(state.pathParameters['id']!);
                   return PurchaseOrderDetailScreen(orderId: id);
+                },
+                routes: [
+                  GoRoute(
+                    path: 'delivery-status',
+                    builder: (context, state) {
+                      final id = int.parse(state.pathParameters['id']!);
+                      return UpdateDeliveryStatusScreen(orderId: id);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/supplier/batches',
+            builder: (context, state) => const MedicineBatchListScreen(),
+            routes: [
+              GoRoute(
+                path: 'create',
+                builder: (context, state) {
+                  final orderIdStr = state.uri.queryParameters['orderId'];
+                  final detailIdStr = state.uri.queryParameters['detailId'];
+                  final orderId = orderIdStr != null ? int.tryParse(orderIdStr) : null;
+                  final detailId = detailIdStr != null ? int.tryParse(detailIdStr) : null;
+                  return CreateMedicineBatchScreen(
+                    preSelectedOrderId: orderId,
+                    preSelectedDetailId: detailId,
+                  );
+                },
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return MedicineBatchDetailScreen(batchId: id);
                 },
               ),
             ],

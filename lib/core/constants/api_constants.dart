@@ -14,5 +14,5 @@ class ApiConstants {
   static const String branchDashboard = '/api/BranchDashboard';
   static const String branchReportSales = '/api/BranchReport/sales';
   static const String branchReportInventory = '/api/BranchReport/inventory';
-
+  static const String medicineBatches = '/api/MedicineBatches';
 }

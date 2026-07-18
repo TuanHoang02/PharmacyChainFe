@@ -13,6 +13,9 @@ class SupplierMainLayout extends StatelessWidget {
     if (location.startsWith('/supplier/orders')) {
       return 1;
     }
+    if (location.startsWith('/supplier/batches')) {
+      return 2;
+    }
     return 0; // default to dashboard
   }
 
@@ -23,6 +26,9 @@ class SupplierMainLayout extends StatelessWidget {
         break;
       case 1:
         context.go('/supplier/orders');
+        break;
+      case 2:
+        context.go('/supplier/batches');
         break;
     }
   }
@@ -91,6 +97,11 @@ class SupplierMainLayout extends StatelessWidget {
             icon: Icon(Icons.assignment_outlined),
             activeIcon: Icon(Icons.assignment),
             label: 'Đơn mua',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_2_outlined),
+            activeIcon: Icon(Icons.inventory_2),
+            label: 'Lô thuốc',
           ),
         ],
       ),

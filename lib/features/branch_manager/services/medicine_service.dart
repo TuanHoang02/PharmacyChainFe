@@ -48,12 +48,12 @@ class MedicineService {
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       return PagedMedicineResponse.fromJson(responseBody);
     } else {
-      String errorMessage = 'Không thể tải danh sách thuốc.';
+      String errorMessage = 'Không thể tải danh sách thuốc. (Mã lỗi: ${response.statusCode}, Body: ${response.body})';
       try {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
         final apiResponse = BaseApiResponse<dynamic>.fromJson(responseBody, (json) => json);
         if (apiResponse.message.isNotEmpty) {
-          errorMessage = apiResponse.message;
+          errorMessage = '${apiResponse.message} (Mã lỗi: ${response.statusCode})';
         }
       } catch (_) {}
       throw Exception(errorMessage);
