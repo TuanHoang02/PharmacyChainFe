@@ -90,12 +90,12 @@ class BranchManagerMainLayout extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Branch'),
           BottomNavigationBarItem(icon: Icon(Icons.medication), label: 'Medicines'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Nhân sự',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics),
+            label: 'Reports',
           ),
         ],
       ),
