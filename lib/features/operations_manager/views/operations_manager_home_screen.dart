@@ -6,7 +6,7 @@ class OperationsManagerHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Operations Manager Home Screen'),
+      child: Text('Trang chủ Quản lý hoạt động'),
     );
   }
 }

@@ -19,6 +19,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
 
   String _selectedPeriod = 'This Month';
   final List<String> _periods = ['Today', 'This Week', 'This Month', 'Custom'];
+  final Map<String, String> _periodLabels = {'Today': 'Hôm nay', 'This Week': 'Tuần này', 'This Month': 'Tháng này', 'Custom': 'Tùy chỉnh'};
   
   // Using branch name for simplicity, in a real app this would be a Branch object with ID
   String _selectedBranch = 'All Branches';
@@ -99,7 +100,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monitor Branch Performance', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Theo dõi hiệu suất chi nhánh', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
@@ -121,15 +122,15 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Error: $_errorMessage'),
-            ElevatedButton(onPressed: _fetchData, child: const Text('Retry'))
+            Text('Lỗi: $_errorMessage'),
+            ElevatedButton(onPressed: _fetchData, child: const Text('Thử lại'))
           ],
         ),
       );
     }
 
     if (_data == null || _data!.branchRanking.isEmpty) {
-      return const Center(child: Text('No performance data found for the selected criteria.'));
+      return const Center(child: Text('Không tìm thấy dữ liệu hiệu suất cho tiêu chí đã chọn.'));
     }
 
     return RefreshIndicator(
@@ -172,7 +173,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Branch', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text('Chi nhánh', style: TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -192,7 +193,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                               children: [
                                 const Icon(Icons.business, size: 16, color: Colors.grey),
                                 const SizedBox(width: 8),
-                                Text(value),
+                                Text(value == 'All Branches' ? 'Tất cả chi nhánh' : value),
                               ],
                             ),
                           );
@@ -213,7 +214,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Period', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text('Thời gian', style: TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -233,7 +234,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                               children: [
                                 const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                                 const SizedBox(width: 8),
-                                Text(value),
+                                Text(_periodLabels[value] ?? value),
                               ],
                             ),
                           );
@@ -260,7 +261,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Start Date', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const Text('Từ ngày', style: TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 4),
                     InkWell(
                       onTap: () async {
@@ -286,7 +287,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(_startDate != null ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}' : 'Select Date'),
+                            Text(_startDate != null ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}' : 'Chọn ngày'),
                             const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                           ],
                         ),
@@ -300,7 +301,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('End Date', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    const Text('Đến ngày', style: TextStyle(fontSize: 12, color: Colors.grey)),
                     const SizedBox(height: 4),
                     InkWell(
                       onTap: () async {
@@ -326,7 +327,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(_endDate != null ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}' : 'Select Date'),
+                            Text(_endDate != null ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}' : 'Chọn ngày'),
                             const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
                           ],
                         ),
@@ -347,10 +348,10 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildKpiCard('Total Sales', '\$${d.totalSales.toStringAsFixed(0)}', Icons.attach_money, true),
-        _buildKpiCard('Inventory Turnover', '${d.inventoryTurnover} Times', Icons.sync, true),
-        _buildKpiCard('Expired Medicines', '${d.expiredMedicines}', Icons.warning_amber_rounded, false),
-        _buildKpiCard('Staff Performance', '${d.staffPerformanceScore} / 5', Icons.people_outline, true),
+        _buildKpiCard('Tổng doanh thu', '${d.totalSales.toStringAsFixed(0)} ₫', Icons.attach_money, true),
+        _buildKpiCard('Vòng quay tồn kho', '${d.inventoryTurnover} lần', Icons.sync, true),
+        _buildKpiCard('Thuốc hết hạn', '${d.expiredMedicines}', Icons.warning_amber_rounded, false),
+        _buildKpiCard('Hiệu suất nhân viên', '${d.staffPerformanceScore} / 5', Icons.people_outline, true),
       ],
     );
   }
@@ -382,7 +383,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                     size: 16,
                   ),
                   Text(
-                    'vs last month',
+                    'so với tháng trước',
                     style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
                   ),
                 ],
@@ -409,14 +410,14 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Sales Trend', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('Xu hướng doanh thu', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text('Daily', style: TextStyle(fontSize: 12)),
+                  child: const Text('Hàng ngày', style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
@@ -493,7 +494,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Inventory Turnover', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Vòng quay tồn kho', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 150,
@@ -568,14 +569,14 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Expired Medicines', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('Thuốc hết hạn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text('By Branch v', style: TextStyle(fontSize: 10)),
+                  child: const Text('Theo chi nhánh v', style: TextStyle(fontSize: 10)),
                 ),
               ],
             ),
@@ -659,11 +660,11 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Branch Performance Ranking', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('Xếp hạng hiệu suất chi nhánh', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 TextButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download, size: 16, color: Colors.black),
-                  label: const Text('Export', style: TextStyle(color: Colors.black)),
+                  label: const Text('Xuất file', style: TextStyle(color: Colors.black)),
                 ),
               ],
             ),
@@ -674,11 +675,11 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                 headingRowColor: WidgetStateProperty.resolveWith((states) => Colors.grey.shade50),
                 columns: const [
                   DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  DataColumn(label: Text('Branch', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  DataColumn(label: Text('Total Sales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  DataColumn(label: Text('Inventory\nTurnover', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  DataColumn(label: Text('Expired\nMedicines', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                  DataColumn(label: Text('Staff Score', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  DataColumn(label: Text('Chi nhánh', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  DataColumn(label: Text('Tổng doanh thu', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  DataColumn(label: Text('Vòng quay\ntồn kho', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  DataColumn(label: Text('Thuốc\nhết hạn', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  DataColumn(label: Text('Điểm nhân viên', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
                 ],
                 rows: _displayData.branchRanking.map((branch) {
                   return DataRow(cells: [
@@ -693,7 +694,7 @@ class _BranchPerformanceScreenState extends State<BranchPerformanceScreen> {
                       )
                     ),
                     DataCell(Text(branch.branchName, style: const TextStyle(fontSize: 12))),
-                    DataCell(Text('\$${branch.totalSales.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12))),
+                    DataCell(Text('${branch.totalSales.toStringAsFixed(0)} ₫', style: const TextStyle(fontSize: 12))),
                     DataCell(Text(branch.inventoryTurnover.toString(), style: const TextStyle(fontSize: 12))),
                     DataCell(Text(branch.expiredMedicines.toString(), style: const TextStyle(fontSize: 12))),
                     DataCell(Text(branch.staffScore.toString(), style: const TextStyle(fontSize: 12))),

@@ -7,7 +7,7 @@ class AdminHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('Chào mừng Quản trị viên (Admin)', style: TextStyle(fontSize: 20)),
+        child: Text('Trang chủ Admin', style: TextStyle(fontSize: 20)),
       ),
     );
   }

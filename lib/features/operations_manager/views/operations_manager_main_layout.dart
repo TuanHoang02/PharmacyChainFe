@@ -31,7 +31,7 @@ class OperationsManagerMainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PharmaCare - Operations'),
+        title: const Text('PharmaCare - Quản lý hoạt động'),
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) async {
@@ -77,11 +77,11 @@ class OperationsManagerMainLayout extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Trang chủ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
-            label: 'Branch Performance',
+            label: 'Hiệu suất chi nhánh',
           ),
         ],
       ),
