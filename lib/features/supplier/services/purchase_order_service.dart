@@ -180,4 +180,68 @@ class PurchaseOrderService {
         : 'Yêu cầu thất bại.';
     throw Exception(message);
   }
+
+  Future<PurchaseOrderDetail> getPurchaseOrderById(int id) {
+    return getOrderDetail(id);
+  }
+
+  Future<PurchaseOrderDetail> updateDeliveryStatus(
+    int id,
+    String deliveryStatus,
+    String? supplierResponseNote,
+  ) async {
+    int statusValue = 0;
+    switch (deliveryStatus) {
+      case 'NotStarted':
+        statusValue = 0;
+        break;
+      case 'Preparing':
+        statusValue = 1;
+        break;
+      case 'Shipping':
+        statusValue = 2;
+        break;
+      case 'Delivered':
+        statusValue = 3;
+        break;
+      case 'Received':
+        statusValue = 4;
+        break;
+    }
+
+    final uri = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.purchaseOrders}/$id/delivery-status',
+    );
+    final response = await _client.patch(
+      uri,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'deliveryStatus': statusValue,
+        'supplierResponseNote': supplierResponseNote,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final apiResponse = BaseApiResponse<dynamic>.fromJson(decoded, (json) => json);
+      if (apiResponse.success && apiResponse.data != null) {
+        return PurchaseOrderDetail.fromJson(apiResponse.data as Map<String, dynamic>);
+      }
+    }
+
+    String errorMessage = 'Cập nhật trạng thái giao hàng thất bại (Mã lỗi: ${response.statusCode}).';
+    try {
+      if (response.body.isNotEmpty) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final apiResponse = BaseApiResponse<dynamic>.fromJson(decoded, (json) => json);
+        if (apiResponse.message.isNotEmpty) {
+          errorMessage = '${apiResponse.message} (Mã lỗi: ${response.statusCode})';
+        }
+      }
+    } catch (_) {}
+    throw Exception(errorMessage);
+  }
 }

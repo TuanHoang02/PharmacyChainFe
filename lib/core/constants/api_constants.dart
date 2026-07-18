@@ -6,9 +6,12 @@ class ApiConstants {
   static const String login = '/api/Auth/login';
   static const String logout = '/api/Auth/logout';
   static const String changePassword = '/api/Auth/change-password';
-
+  static const String medicines = '/api/Medicines';
+  static const String categories = '/api/Categories';
+  static const String sales = '/api/Sales';
   static const String purchaseOrders = '/api/PurchaseOrders';
   static const String branchDashboard = '/api/BranchDashboard';
   static const String branchReportSales = '/api/BranchReport/sales';
   static const String branchReportInventory = '/api/BranchReport/inventory';
+  static const String medicineBatches = '/api/MedicineBatches';
 }

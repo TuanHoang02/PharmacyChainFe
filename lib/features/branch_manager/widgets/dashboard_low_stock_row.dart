@@ -18,8 +18,11 @@ class DashboardLowStockRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.medication_outlined,
-              color: Color(0xFFFF9090), size: 20),
+          const Icon(
+            Icons.medication_outlined,
+            color: Color(0xFFFF9090),
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

@@ -10,9 +10,11 @@ class BranchManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    // TODO: re-add inventory index when implemented
-    if (location.startsWith('/manager/reports')) {
+    if (location.startsWith('/manager/medicines')) {
       return 1;
+    }
+    if (location.startsWith('/manager/reports')) {
+      return 2;
     }
     return 0; // default to dashboard
   }
@@ -22,11 +24,10 @@ class BranchManagerMainLayout extends StatelessWidget {
       case 0:
         context.go('/manager');
         break;
-      // TODO: re-add inventory case when implemented
-      // case 1:
-      //   context.go('/manager/inventory');
-      //   break;
       case 1:
+        context.go('/manager/medicines');
+        break;
+      case 2:
         context.go('/manager/reports');
         break;
     }
@@ -72,7 +73,7 @@ class BranchManagerMainLayout extends StatelessWidget {
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
       body: child,
@@ -80,15 +81,8 @@ class BranchManagerMainLayout extends StatelessWidget {
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Branch',
-          ),
-          // TODO: implement inventory management feature
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.inventory),
-          //   label: 'Inventory',
-          // ),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Branch'),
+          BottomNavigationBarItem(icon: Icon(Icons.medication), label: 'Medicines'),
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
             label: 'Reports',
