@@ -117,7 +117,55 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+        final darkTheme = theme.copyWith(
+      scaffoldBackgroundColor: const Color(0xFF0A1628),
+      cardColor: const Color(0xFF111F38),
+      dialogBackgroundColor: const Color(0xFF111F38),
+      dividerColor: const Color(0xFF1E3A5F),
+      primaryColor: const Color(0xFF00C48C),
+      hintColor: const Color(0xFF8FA8C9),
+      colorScheme: theme.colorScheme.copyWith(
+        primary: const Color(0xFF00C48C),
+        surface: const Color(0xFF111F38),
+        onSurface: Colors.white,
+      ),
+      textTheme: theme.textTheme.apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
+      appBarTheme: theme.appBarTheme.copyWith(
+        backgroundColor: const Color(0xFF0A1628),
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: const Color(0xFF0A1628),
+        labelStyle: const TextStyle(color: Color(0xFF8FA8C9)),
+        hintStyle: const TextStyle(color: Color(0xFF8FA8C9)),
+        prefixIconColor: const Color(0xFF8FA8C9),
+        suffixIconColor: const Color(0xFF8FA8C9),
+        border: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: Color(0xFF1E3A5F)),
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: Color(0xFF1E3A5F)),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderSide: BorderSide(color: Color(0xFF00C48C)),
+        ),
+      ),
+    );
+
+    return Theme(
+      data: darkTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Cập nhật chi nhánh' : 'Thêm chi nhánh'),
         leading: IconButton(
@@ -146,7 +194,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Điền đầy đủ các thông tin bắt buộc dưới đây để lưu vào hệ thống.',
-                        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
                       ),
                       const SizedBox(height: 24),
 
@@ -155,9 +203,9 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.red[50],
+                            color: Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red[200]!),
+                            border: Border.all(color: Colors.red.withOpacity(0.3)),
                           ),
                           child: Row(
                             children: [
@@ -178,7 +226,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                       // Name field
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Tên chi nhánh *',
                           hintText: 'Nhập tên chi nhánh (ví dụ: Chi nhánh Quận 1)',
                           border: OutlineInputBorder(),
@@ -200,7 +248,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                       TextFormField(
                         controller: _addressController,
                         maxLines: 2,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Địa chỉ *',
                           hintText: 'Số nhà, tên đường, phường, quận, thành phố...',
                           border: OutlineInputBorder(),
@@ -222,7 +270,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                       TextFormField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Số điện thoại',
                           hintText: 'Nhập số điện thoại liên hệ',
                           border: OutlineInputBorder(),
@@ -243,7 +291,7 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Email',
                           hintText: 'Nhập email liên hệ',
                           border: OutlineInputBorder(),
@@ -327,6 +375,9 @@ class _BranchFormScreenState extends State<BranchFormScreen> {
                 ),
               ),
             ),
+    );
+        },
+      ),
     );
   }
 }

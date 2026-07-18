@@ -108,7 +108,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
+    return Scaffold(backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _fetchDashboard,
@@ -129,7 +129,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                           'Báo cáo doanh số',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -140,7 +140,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Icons.refresh),
+                      icon: const Icon(Icons.refresh, color: Colors.white),
                       onPressed: _fetchDashboard,
                       tooltip: 'Tải lại dữ liệu',
                     ),
@@ -152,10 +152,10 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.grey[200]!),
+                    side: const BorderSide(color: Color(0xFF1E3A5F)),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: Colors.white,
+                  color: const Color(0xFF111F38),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Row(
@@ -166,10 +166,13 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(color: const Color(0xFF1E3A5F)), color: const Color(0xFF0A1628),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<int?>(
+                                dropdownColor: const Color(0xFF0A1628),
+                                icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF8FA8C9)),
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
                                 value: _selectedBranchId,
                                 isExpanded: true,
                                 items: _branchFilters.map((f) {
@@ -195,11 +198,14 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey[300]!),
+                            border: Border.all(color: const Color(0xFF1E3A5F)), color: const Color(0xFF0A1628),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _selectedDateText,
+                              dropdownColor: const Color(0xFF0A1628),
+                              icon: Icon(Icons.keyboard_arrow_down, color: Color(0xFF8FA8C9)),
+                              style: const TextStyle(color: Colors.white, fontSize: 14),
                               items: const [
                                 DropdownMenuItem(value: 'Hôm nay', child: Text('Hôm nay')),
                                 DropdownMenuItem(value: '7 ngày qua', child: Text('7 ngày qua')),
@@ -223,7 +229,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: Colors.red[50],
+                      color: Colors.red.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.red[200]!),
                     ),
@@ -295,10 +301,10 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                               elevation: 0,
                               margin: const EdgeInsets.only(bottom: 8),
                               shape: RoundedRectangleBorder(
-                                side: BorderSide(color: Colors.amber[200]!),
+                                side: BorderSide(color: Colors.amber[700]!),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              color: Colors.amber[50],
+                              color: Colors.amber.withOpacity(0.05),
                               child: ListTile(
                                 leading: Icon(Icons.warning, color: Colors.amber[700]),
                                 title: Text(item.medicineName, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -329,10 +335,10 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                               elevation: 0,
                               margin: const EdgeInsets.only(bottom: 8),
                               shape: RoundedRectangleBorder(
-                                side: BorderSide(color: Colors.red[200]!),
+                                side: BorderSide(color: Colors.red[700]!),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              color: Colors.red[50],
+                              color: Colors.red.withOpacity(0.05),
                               child: ListTile(
                                 leading: Icon(Icons.hourglass_bottom, color: Colors.red[700]),
                                 title: Text('${batch.medicineName} (${batch.batchNumber})',
@@ -354,12 +360,13 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                   _summary!.topSellingMedicines.isEmpty
                       ? _buildEmptyState('Chưa có dữ liệu thuốc bán chạy.')
                       : Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: Colors.grey[200]!),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListView.separated(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(color: Color(0xFF1E3A5F)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      color: const Color(0xFF111F38),
+                      child: ListView.separated(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _summary!.topSellingMedicines.length,
@@ -400,9 +407,10 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                     Card(
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.grey[200]!),
+                        side: const BorderSide(color: Color(0xFF1E3A5F)),
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      color: const Color(0xFF111F38),
                       child: ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -411,15 +419,12 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
                         itemBuilder: (context, idx) {
                           final bp = _summary!.branchPerformance![idx];
                           return ListTile(
-                            leading: Icon(Icons.storefront, color: theme.colorScheme.primary),
-                            title: Text(bp.branchName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text('Số đơn hàng: ${bp.salesCount}'),
+                            leading: Icon(Icons.storefront, color: Color(0xFF00C48C)),
+                            title: Text(bp.branchName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                            subtitle: Text('Số đơn hàng: ${bp.salesCount}', style: const TextStyle(color: Color(0xFF8FA8C9))),
                             trailing: Text(
                               _formatCurrency(bp.revenue),
-                              style: TextStyle(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15),
+                              style: const TextStyle(color: Color(0xFF00C48C), fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                           );
                         },
@@ -444,12 +449,12 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
     required Color color,
   }) {
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey[200]!),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      color: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    side: const BorderSide(color: Color(0xFF1E3A5F)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  color: const Color(0xFF111F38),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -461,7 +466,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
               children: [
                 Text(
                   title,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: const Color(0xFF8FA8C9), fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 Icon(icon, color: color, size: 20),
               ],
@@ -471,7 +476,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
               fit: BoxFit.scaleDown,
               child: Text(
                 value,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
               ),
             ),
           ],
@@ -485,7 +490,7 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
       text,
       style: theme.textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.bold,
-        color: Colors.black87,
+        color: Colors.white,
       ),
     );
   }
@@ -493,9 +498,9 @@ class _OperationsManagerHomeScreenState extends State<OperationsManagerHomeScree
   Widget _buildEmptyState(String text) {
     return Card(
       elevation: 0,
-      color: Colors.grey[50],
+      color: const Color(0xFF111F38),
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey[100]!),
+        side: const BorderSide(color: Color(0xFF1E3A5F)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(

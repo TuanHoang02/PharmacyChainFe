@@ -10,14 +10,12 @@ class BranchManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/manager/inventory')) {
+    // TODO: re-add inventory index when implemented
+    if (location.startsWith('/manager/reports')) {
       return 1;
     }
     if (location.startsWith('/manager/staff')) {
       return 2;
-    }
-    if (location.startsWith('/manager/reports')) {
-      return 3;
     }
     return 0; // default to dashboard
   }
@@ -27,14 +25,15 @@ class BranchManagerMainLayout extends StatelessWidget {
       case 0:
         context.go('/manager');
         break;
+      // TODO: re-add inventory case when implemented
+      // case 1:
+      //   context.go('/manager/inventory');
+      //   break;
       case 1:
-        context.go('/manager/inventory');
+        context.go('/manager/reports');
         break;
       case 2:
         context.go('/manager/staff');
-        break;
-      case 3:
-        context.go('/manager/reports');
         break;
     }
   }
@@ -43,10 +42,9 @@ class BranchManagerMainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PharmaCare - Branch Manager'),
+        title: const Text('Pharmacy Chain'),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.account_circle, size: 28),
             onSelected: (value) async {
               if (value == 'change_password') {
                 context.push('/change-password');
@@ -80,33 +78,25 @@ class BranchManagerMainLayout extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(width: 8),
+          )
         ],
       ),
       body: child,
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Tổng quan',
+            icon: Icon(Icons.store),
+            label: 'Branch',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Kho hàng',
+            icon: Icon(Icons.analytics),
+            label: 'Reports',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Nhân sự',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.analytics),
-            label: 'Báo cáo',
           ),
         ],
       ),

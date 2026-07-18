@@ -14,6 +14,7 @@ class SupplierModel {
   final bool isActive;
   final String createdAt;
   final String? updatedAt;
+  final String? username;
 
   SupplierModel({
     required this.supplierID,
@@ -25,6 +26,7 @@ class SupplierModel {
     required this.isActive,
     required this.createdAt,
     this.updatedAt,
+    this.username,
   });
 
   factory SupplierModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class SupplierModel {
       isActive: json['isActive'] as bool? ?? false,
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String?,
+      username: json['username'] as String?,
     );
   }
 }
@@ -118,6 +121,47 @@ class SupplierService {
         return baseResponse.data!;
       }
       throw Exception(baseResponse.message.isNotEmpty ? baseResponse.message : 'Tạo nhà cung cấp thất bại.');
+    } else {
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+      final msg = responseBody['message'] as String? ?? 'Lỗi hệ thống';
+      throw Exception(msg);
+    }
+  }
+
+  Future<SupplierModel> createSupplierWithAccount({
+    required String supplierName,
+    String? contactName,
+    String? phoneNumber,
+    String? email,
+    String? address,
+    required String username,
+    required String password,
+  }) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}/api/Supplier/register');
+    final response = await _apiClient.post(
+      uri,
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode({
+        'supplierName': supplierName,
+        'contactName': contactName,
+        'phoneNumber': phoneNumber,
+        'email': email,
+        'address': address,
+        'username': username,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+      final baseResponse = BaseApiResponse<SupplierModel>.fromJson(
+        responseBody,
+        (dataJson) => SupplierModel.fromJson(dataJson as Map<String, dynamic>),
+      );
+      if (baseResponse.success && baseResponse.data != null) {
+        return baseResponse.data!;
+      }
+      throw Exception(baseResponse.message.isNotEmpty ? baseResponse.message : 'Tạo nhà cung cấp và tài khoản thất bại.');
     } else {
       final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
       final msg = responseBody['message'] as String? ?? 'Lỗi hệ thống';

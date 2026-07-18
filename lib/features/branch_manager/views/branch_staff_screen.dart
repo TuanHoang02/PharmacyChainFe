@@ -29,33 +29,35 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBranchAndFetchStaff();
+    _loadUserBranchAndFetch();
   }
 
-  Future<void> _loadBranchAndFetchStaff() async {
-    setState(() => _isLoading = true);
-    try {
-      final branchIdStr = await _storageService.getBranchId();
-      if (branchIdStr != null) {
-        _currentUserBranchId = int.tryParse(branchIdStr);
-      }
-      await _fetchStaff();
-    } catch (e) {
+  Future<void> _loadUserBranchAndFetch() async {
+    final bIdStr = await _storageService.getBranchId();
+    final bId = bIdStr != null ? int.tryParse(bIdStr) : null;
+    if (mounted) {
       setState(() {
-        _errorMessage = e.toString().replaceAll('Exception:', '').trim();
-        _isLoading = false;
+        _currentUserBranchId = bId;
       });
+      _fetchStaff();
     }
   }
 
   Future<void> _fetchStaff() async {
+    if (_currentUserBranchId == null) {
+      setState(() {
+        _errorMessage = 'Không tìm thấy ID chi nhánh của bạn. Vui lòng đăng nhập lại.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
     try {
-      final pagedResponse = await _staffService.getStaffs(
+      final response = await _staffService.getStaffs(
         searchTerm: _searchTerm,
         branchId: _currentUserBranchId,
         isActive: _selectedIsActive,
@@ -64,17 +66,16 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
       );
 
       setState(() {
-        _staffList = pagedResponse.data;
-        _currentPage = pagedResponse.pageNumber;
-        _pageSize = pagedResponse.pageSize;
-        _totalRecords = pagedResponse.totalRecords;
-        _totalPages = pagedResponse.totalPages;
+        _staffList = response.data;
+        _totalRecords = response.totalRecords;
+        _totalPages = response.totalPages;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString().replaceAll('Exception:', '').trim();
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
+        _staffList = [];
       });
     }
   }
@@ -82,18 +83,22 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
   Future<void> _deleteStaff(StaffModel staff) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc muốn tạm khóa tài khoản dược sĩ "${staff.fullName}"?'),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111F38),
+        title: const Text('Xác nhận khóa tài khoản', style: TextStyle(color: Colors.white)),
+        content: Text(
+          'Bạn có chắc chắn muốn ngừng hoạt động nhân viên "${staff.fullName}" không?',
+          style: const TextStyle(color: Color(0xFF8FA8C9)),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Hủy', style: TextStyle(color: Color(0xFF8FA8C9))),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Tạm khóa'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Khóa', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -104,23 +109,22 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
       try {
         await _staffService.deleteStaff(staff.userID);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tạm khóa tài khoản dược sĩ thành công.')),
+          const SnackBar(content: Text('Đã cập nhật trạng thái ngừng hoạt động nhân viên.')),
         );
         _fetchStaff();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceAll('Exception:', ''))),
-        );
-        setState(() => _isLoading = false);
+        setState(() {
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          _isLoading = false;
+        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -131,29 +135,35 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Nhân sự chi nhánh',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Nhân sự chi nhánh',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Quản lý danh sách dược sĩ thuộc chi nhánh của bạn',
-                        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Quản lý danh sách dược sĩ thuộc chi nhánh của bạn',
+                          style: TextStyle(
+                            color: Color(0xFF8FA8C9),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
+                      backgroundColor: const Color(0xFF00C48C),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: () => context.push('/manager/staff/new').then((_) => _fetchStaff()),
                     icon: const Icon(Icons.add),
@@ -164,69 +174,78 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
               const SizedBox(height: 20),
 
               // Filter Row
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey[200]!),
+              Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF111F38),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF1E3A5F)),
                 ),
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Tìm kiếm dược sĩ theo tên, SĐT...',
-                            prefixIcon: const Icon(Icons.search),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey[300]!),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey[200]!),
-                            ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Tìm kiếm dược sĩ theo tên, SĐT...',
+                          hintStyle: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 14),
+                          prefixIcon: const Icon(Icons.search, color: Color(0xFF8FA8C9)),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                          filled: true,
+                          fillColor: const Color(0xFF0A1628),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFF1E3A5F)),
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFF1E3A5F)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFF00C48C)),
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchTerm = val;
+                            _currentPage = 1;
+                          });
+                          _fetchStaff();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A1628),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF1E3A5F)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<bool?>(
+                          value: _selectedIsActive,
+                          dropdownColor: const Color(0xFF0A1628),
+                          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF8FA8C9)),
+                          hint: const Text('Trạng thái', style: TextStyle(color: Color(0xFF8FA8C9), fontSize: 14)),
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          items: const [
+                            DropdownMenuItem(value: null, child: Text('Tất cả')),
+                            DropdownMenuItem(value: true, child: Text('Hoạt động')),
+                            DropdownMenuItem(value: false, child: Text('Bị khóa')),
+                          ],
                           onChanged: (val) {
                             setState(() {
-                              _searchTerm = val;
+                              _selectedIsActive = val;
                               _currentPage = 1;
                             });
                             _fetchStaff();
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<bool?>(
-                            value: _selectedIsActive,
-                            hint: const Text('Trạng thái'),
-                            items: const [
-                              DropdownMenuItem(value: null, child: Text('Tất cả')),
-                              DropdownMenuItem(value: true, child: Text('Hoạt động')),
-                              DropdownMenuItem(value: false, child: Text('Bị khóa')),
-                            ],
-                            onChanged: (val) {
-                              setState(() {
-                                _selectedIsActive = val;
-                                _currentPage = 1;
-                              });
-                              _fetchStaff();
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -237,16 +256,24 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.red[50],
+                    color: Colors.red.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[200]!),
+                    border: Border.all(color: Colors.red[800]!),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error, color: Colors.red),
+                      const Icon(Icons.error_outline, color: Colors.redAccent),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(_errorMessage, style: const TextStyle(color: Colors.red))),
-                      IconButton(icon: const Icon(Icons.refresh, color: Colors.red), onPressed: _fetchStaff)
+                      Expanded(
+                        child: Text(
+                          _errorMessage,
+                          style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh, color: Colors.redAccent),
+                        onPressed: _fetchStaff,
+                      )
                     ],
                   ),
                 ),
@@ -254,17 +281,17 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
               // Content Area
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00C48C)))
                     : _staffList.isEmpty
                         ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.badge_outlined, size: 64, color: Colors.grey[400]),
+                                const Icon(Icons.badge_outlined, size: 64, color: Color(0xFF8FA8C9)),
                                 const SizedBox(height: 12),
-                                Text(
+                                const Text(
                                   'Không tìm thấy nhân viên nào trong chi nhánh này',
-                                  style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                                  style: TextStyle(color: Color(0xFF8FA8C9), fontSize: 15),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -274,41 +301,48 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                             itemCount: _staffList.length,
                             itemBuilder: (context, index) {
                               final staff = _staffList[index];
-                              return Card(
-                                elevation: 0,
+                              return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
-                                shape: RoundedRectangleBorder(
-                                  side: BorderSide(color: Colors.grey[200]!),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF111F38),
                                   borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF1E3A5F)),
                                 ),
-                                color: Colors.white,
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(16),
                                   leading: CircleAvatar(
-                                    backgroundColor: Colors.teal[50],
-                                    child: Icon(Icons.medical_services, color: theme.colorScheme.primary),
+                                    backgroundColor: const Color(0xFF0A1628),
+                                    child: const Icon(Icons.medical_services, color: Color(0xFF00C48C)),
                                   ),
                                   title: Row(
                                     children: [
                                       Expanded(
                                         child: Text(
                                           staff.fullName,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: staff.isActive ? Colors.teal[50] : Colors.red[50],
+                                          color: staff.isActive
+                                              ? const Color(0xFF00C48C).withOpacity(0.1)
+                                              : Colors.red.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(4),
                                           border: Border.all(
-                                            color: staff.isActive ? Colors.teal[200]! : Colors.red[200]!,
+                                            color: staff.isActive
+                                                ? const Color(0xFF00C48C).withOpacity(0.3)
+                                                : Colors.red.withOpacity(0.3),
                                           ),
                                         ),
                                         child: Text(
-                                          staff.isActive ? 'Hoạt động' : 'Tạm khóa',
+                                          staff.isActive ? 'Active' : 'Locked',
                                           style: TextStyle(
-                                            color: staff.isActive ? Colors.teal[700] : Colors.red[700],
+                                            color: staff.isActive ? const Color(0xFF00C48C) : Colors.redAccent,
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -323,21 +357,21 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            const Icon(Icons.security, size: 14, color: Colors.grey),
+                                            const Icon(Icons.security, size: 14, color: Color(0xFF8FA8C9)),
                                             const SizedBox(width: 6),
-                                            Text(staff.roleName),
+                                            Text(staff.roleName, style: const TextStyle(color: Color(0xFF8FA8C9))),
                                             const SizedBox(width: 16),
-                                            const Icon(Icons.phone, size: 14, color: Colors.grey),
+                                            const Icon(Icons.phone, size: 14, color: Color(0xFF8FA8C9)),
                                             const SizedBox(width: 6),
-                                            Text(staff.phoneNumber ?? 'Chưa có SĐT'),
+                                            Text(staff.phoneNumber ?? 'Chưa có SĐT', style: const TextStyle(color: Color(0xFF8FA8C9))),
                                           ],
                                         ),
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.email, size: 14, color: Colors.grey),
+                                            const Icon(Icons.email, size: 14, color: Color(0xFF8FA8C9)),
                                             const SizedBox(width: 6),
-                                            Text(staff.email ?? 'Chưa có email'),
+                                            Text(staff.email ?? 'Chưa có email', style: const TextStyle(color: Color(0xFF8FA8C9))),
                                           ],
                                         ),
                                       ],
@@ -347,13 +381,13 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blue),
+                                        icon: const Icon(Icons.edit, color: Color(0xFF1E88E5)),
                                         onPressed: () => context
                                             .push('/manager/staff/edit/${staff.userID}')
                                             .then((_) => _fetchStaff()),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.lock_outline, color: Colors.red),
+                                        icon: const Icon(Icons.lock_outline, color: Colors.redAccent),
                                         onPressed: () => _deleteStaff(staff),
                                       ),
                                     ],
@@ -372,7 +406,7 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.chevron_left),
+                        icon: const Icon(Icons.chevron_left, color: Colors.white),
                         onPressed: _currentPage > 1
                             ? () {
                                 setState(() => _currentPage--);
@@ -382,10 +416,10 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                       ),
                       Text(
                         'Trang $_currentPage / $_totalPages',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.chevron_right),
+                        icon: const Icon(Icons.chevron_right, color: Colors.white),
                         onPressed: _currentPage < _totalPages
                             ? () {
                                 setState(() => _currentPage++);
