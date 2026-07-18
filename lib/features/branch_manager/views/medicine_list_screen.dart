@@ -252,30 +252,6 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await context.push('/manager/medicines/create');
-          if (result == true) {
-            _fetchMedicines(resetPage: true);
-          }
-        },
-        backgroundColor: const Color(0xFF1E88E5),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E88E5), Color(0xFF00C48C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            constraints: const BoxConstraints(minWidth: 56, minHeight: 56),
-            alignment: Alignment.center,
-            child: const Icon(Icons.add, color: Colors.white, size: 28),
-          ),
-        ),
-      ),
     );
   }
 
@@ -286,40 +262,68 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
       child: Column(
         children: [
           // Row 1: Search bar
-          TextFormField(
-            controller: _searchController,
-            onChanged: _onSearchChanged,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
-            decoration: InputDecoration(
-              hintText: 'Tìm kiếm theo tên thuốc hoặc tên gốc...',
-              hintStyle: TextStyle(color: Colors.white.withAlpha(80), fontSize: 13),
-              prefixIcon: Icon(Icons.search, color: Colors.white.withAlpha(120), size: 20),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.white60, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        _searchQuery = '';
-                        _fetchMedicines(resetPage: true);
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: Colors.white.withAlpha(12),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withAlpha(20)),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Tìm kiếm theo tên thuốc hoặc tên gốc...',
+                    hintStyle: TextStyle(color: Colors.white.withAlpha(80), fontSize: 13),
+                    prefixIcon: Icon(Icons.search, color: Colors.white.withAlpha(120), size: 20),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.white60, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              _searchQuery = '';
+                              _fetchMedicines(resetPage: true);
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.white.withAlpha(12),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.white.withAlpha(20)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.white.withAlpha(20)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 1.5),
+                    ),
+                  ),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withAlpha(20)),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () async {
+                  final result = await context.push('/manager/medicines/create');
+                  if (result == true) {
+                    _fetchMedicines(resetPage: true);
+                  }
+                },
+                child: Container(
+                  height: 48,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E88E5), Color(0xFF00C48C)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 24),
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF1E88E5), width: 1.5),
-              ),
-            ),
+            ],
           ),
           const SizedBox(height: 12),
 
