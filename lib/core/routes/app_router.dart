@@ -4,28 +4,35 @@ import 'package:pharmacy_chain_fe/core/network/local_storage_service.dart';
 
 import 'package:pharmacy_chain_fe/features/auth/views/splash_screen.dart';
 import 'package:pharmacy_chain_fe/features/auth/views/login_screen.dart';
-
 import 'package:pharmacy_chain_fe/features/auth/views/change_password_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/admin/views/user_management_screen.dart';
+
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_list_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_create_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_edit_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
+
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_list_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_history_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_invoice_detail_screen.dart';
+
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_performance_screen.dart';
+
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
-
+import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
+import 'package:pharmacy_chain_fe/features/supplier/views/purchase_order_detail_screen.dart';
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
 
@@ -48,10 +55,10 @@ class AppRouter {
       }
 
       if (isLoggedIn && isGoingToAuth) {
-        if (role == 'admin') return '/admin';
-        if (role == 'branchmanager' || role == 'branch manager') return '/manager';
+        if (role == 'administrator') return '/admin';
+        if (role == 'operations manager') return '/operations';
+        if (role == 'branch manager') return '/manager';
         if (role == 'pharmacist') return '/pharmacist';
-        if (role == 'operationsmanager' || role == 'operations manager') return '/operations';
         if (role == 'supplier') return '/supplier';
 
         return '/login';
@@ -59,16 +66,16 @@ class AppRouter {
 
       // Route Guards
       if (isLoggedIn) {
-        if (location.startsWith('/admin') && role != 'admin') {
+        if (location.startsWith('/admin') && role != 'administrator') {
           return '/login';
         }
-        if (location.startsWith('/manager') && (role != 'branchmanager' && role != 'branch manager')) {
+        if (location.startsWith('/operations') && role != 'operations manager') {
+          return '/login';
+        }
+        if (location.startsWith('/manager') && role != 'branch manager') {
           return '/login';
         }
         if (location.startsWith('/pharmacist') && role != 'pharmacist') {
-          return '/login';
-        }
-        if (location.startsWith('/operations') && (role != 'operationsmanager' && role != 'operations manager')) {
           return '/login';
         }
         if (location.startsWith('/supplier') && role != 'supplier') {
@@ -104,7 +111,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/admin/users',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Admin Users'))),
+            builder: (context, state) => const UserManagementScreen(),
           ),
           GoRoute(
             path: '/admin/settings',
@@ -151,7 +158,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/manager/reports',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Reports'))),
+            builder: (context, state) => const BranchReportScreen(),
           ),
         ],
       ),
@@ -203,6 +210,10 @@ class AppRouter {
             path: '/operations',
             builder: (context, state) => const OperationsManagerHomeScreen(),
           ),
+          GoRoute(
+            path: '/operations/branch-performance',
+            builder: (context, state) => const BranchPerformanceScreen(),
+          ),
         ],
       ),
 
@@ -213,6 +224,19 @@ class AppRouter {
           GoRoute(
             path: '/supplier',
             builder: (context, state) => const SupplierHomeScreen(),
+          ),
+          GoRoute(
+            path: '/supplier/orders',
+            builder: (context, state) => const PurchaseOrdersScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return PurchaseOrderDetailScreen(orderId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),
