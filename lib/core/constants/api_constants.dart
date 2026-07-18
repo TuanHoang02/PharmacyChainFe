@@ -9,4 +9,6 @@ class ApiConstants {
 
   static const String purchaseOrders = '/api/PurchaseOrders';
   static const String branchDashboard = '/api/BranchDashboard';
+  static const String branchReportSales = '/api/BranchReport/sales';
+  static const String branchReportInventory = '/api/BranchReport/inventory';
 }

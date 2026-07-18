@@ -12,6 +12,7 @@ import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
@@ -124,7 +125,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/manager/reports',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Reports'))),
+            builder: (context, state) => const BranchReportScreen(),
           ),
         ],
       ),
