@@ -9,6 +9,7 @@ import 'package:pharmacy_chain_fe/features/auth/views/change_password_screen.dar
 
 import 'package:pharmacy_chain_fe/features/admin/views/admin_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/admin/views/admin_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/admin/views/user_management_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
@@ -100,7 +101,7 @@ class AppRouter {
           ),
           GoRoute(
             path: '/admin/users',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Admin Users'))),
+            builder: (context, state) => const UserManagementScreen(),
           ),
           GoRoute(
             path: '/admin/settings',
