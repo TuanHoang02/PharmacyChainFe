@@ -10,10 +10,22 @@ class OperationsManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/operations/branch-performance')) {
+    if (location.startsWith('/operations/branches')) {
       return 1;
     }
-    return 0;
+    if (location.startsWith('/operations/categories')) {
+      return 2;
+    }
+    if (location.startsWith('/operations/suppliers')) {
+      return 3;
+    }
+    if (location.startsWith('/operations/staff')) {
+      return 4;
+    }
+    if (location.startsWith('/operations/purchase-requests')) {
+      return 5;
+    }
+    return 0; // default to dashboard
   }
 
   void _onItemTapped(int index, BuildContext context) {
@@ -22,7 +34,19 @@ class OperationsManagerMainLayout extends StatelessWidget {
         context.go('/operations');
         break;
       case 1:
-        context.go('/operations/branch-performance');
+        context.go('/operations/branches');
+        break;
+      case 2:
+        context.go('/operations/categories');
+        break;
+      case 3:
+        context.go('/operations/suppliers');
+        break;
+      case 4:
+        context.go('/operations/staff');
+        break;
+      case 5:
+        context.go('/operations/purchase-requests');
         break;
     }
   }
@@ -31,9 +55,10 @@ class OperationsManagerMainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PharmaCare - Operations'),
+        title: const Text('PharmaCare - Quản lý hoạt động'),
         actions: [
           PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle, size: 28),
             onSelected: (value) async {
               if (value == 'change_password') {
                 context.push('/change-password');
@@ -67,21 +92,41 @@ class OperationsManagerMainLayout extends StatelessWidget {
                 ),
               ),
             ],
-          )
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: child,
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: Icon(Icons.dashboard),
+            label: 'Tổng quan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Branch Performance',
+            icon: Icon(Icons.store),
+            label: 'Chi nhánh',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Danh mục',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_shipping),
+            label: 'Nhà cung cấp',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Nhân sự',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.request_page),
+            label: 'Yêu cầu nhập hàng',
           ),
         ],
       ),

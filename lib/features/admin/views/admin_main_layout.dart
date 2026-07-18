@@ -58,15 +58,15 @@ class AdminMainLayout extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            label: 'Trang chủ',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
-            label: 'Users',
+            label: 'Người dùng',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: 'Cài đặt',
           ),
         ],
       ),

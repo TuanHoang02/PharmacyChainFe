@@ -1,19 +1,21 @@
 import 'dart:convert';
-
 import 'package:pharmacy_chain_fe/core/constants/api_constants.dart';
 import 'package:pharmacy_chain_fe/core/network/api_client.dart';
-import 'package:pharmacy_chain_fe/features/admin/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/lookup_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/paged_response.dart';
+import 'package:pharmacy_chain_fe/shared/models/base_api_response.dart';
 
 class UserService {
   final ApiClient _client = ApiClient();
 
-  Future<PagedUserResponse> getUsers({
+  Future<PagedResponse<List<UserModel>>> getUsers({
+    int page = 1,
+    int size = 10,
     String? keyword,
     int? roleId,
     int? branchId,
     bool? isActive,
-    int page = 1,
-    int size = 10,
   }) async {
     final Map<String, String> queryParams = {
       'page': page.toString(),
@@ -32,10 +34,23 @@ class UserService {
       
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        if (decoded['success'] == true && decoded['data'] != null) {
-          return PagedUserResponse.fromJson(decoded['data']);
+        final baseResponse = BaseApiResponse<PagedResponse<List<UserModel>>>.fromJson(
+          decoded,
+          (json) {
+            return PagedResponse<List<UserModel>>.fromJson(
+              json as Map<String, dynamic>,
+              (dataJson) {
+                final List<dynamic> list = dataJson as List<dynamic>;
+                return list.map((e) => UserModel.fromJson(e as Map<String, dynamic>)).toList();
+              },
+            );
+          },
+        );
+        
+        if (baseResponse.success && baseResponse.data != null) {
+          return baseResponse.data!;
         } else {
-          throw Exception(decoded['message'] ?? 'Failed to load users');
+          throw Exception(baseResponse.message.isNotEmpty ? baseResponse.message : 'Failed to load users');
         }
       } else {
         final decoded = jsonDecode(response.body);

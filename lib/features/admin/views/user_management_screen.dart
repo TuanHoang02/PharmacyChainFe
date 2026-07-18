@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_chain_fe/features/admin/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/lookup_model.dart';
 import 'package:pharmacy_chain_fe/features/admin/services/user_service.dart';
 
 class UserManagementScreen extends StatefulWidget {
@@ -62,8 +63,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       setState(() {
         _users = response.data;
         _totalRecords = response.totalRecords;
-        _totalPages = (response.totalRecords / response.pageSize).ceil();
-        if (_totalPages == 0) _totalPages = 1;
+        _totalPages = response.totalPages > 0 ? response.totalPages : 1;
       });
     } catch (e) {
       if (mounted) {
@@ -80,14 +80,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final bool confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Deactivation'),
-        content: const Text('Are you sure you want to deactivate this user? They will no longer be able to log in.'),
+        title: const Text('Xác nhận vô hiệu hoá'),
+        content: const Text('Bạn có chắc chắn muốn vô hiệu hoá người dùng này không? Họ sẽ không thể đăng nhập được nữa.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true), 
-            child: const Text('Deactivate', style: TextStyle(color: Colors.white)),
+            child: const Text('Vô hiệu hoá', style: TextStyle(color: Colors.white)),
           ),
         ],
       )
@@ -99,7 +99,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       await _userService.deactivateUser(userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User deactivated successfully')),
+          const SnackBar(content: Text('Vô hiệu hoá người dùng thành công')),
         );
         _fetchUsers();
       }
@@ -125,12 +125,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             if (user == null) {
               await _userService.createUser(userData);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User created successfully')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tạo người dùng thành công')));
               }
             } else {
               await _userService.updateUser(user.userId, userData);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User updated successfully')));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cập nhật người dùng thành công')));
               }
             }
             _fetchUsers();
@@ -148,30 +148,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('User Details'),
+        title: const Text('Chi tiết người dùng'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('ID: ${user.userId}', style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Full Name: ${user.fullName}'),
+            Text('Họ và tên: ${user.fullName}'),
             const SizedBox(height: 4),
-            Text('Username: ${user.username}'),
+            Text('Tên đăng nhập: ${user.username}'),
             const SizedBox(height: 4),
-            Text('Email: ${user.email ?? 'N/A'}'),
+            Text('Email: ${user.email ?? 'Không có'}'),
             const SizedBox(height: 4),
-            Text('Phone: ${user.phoneNumber ?? 'N/A'}'),
+            Text('Số điện thoại: ${user.phoneNumber ?? 'Không có'}'),
             const SizedBox(height: 4),
-            Text('Role: ${user.roleName}'),
+            Text('Vai trò: ${user.roleName}'),
             const SizedBox(height: 4),
-            Text('Branch: ${user.branchName ?? 'N/A'}'),
+            Text('Chi nhánh: ${user.branchName ?? 'Không có'}'),
             const SizedBox(height: 4),
-            Text('Status: ${user.isActive ? 'Active' : 'Inactive'}'),
+            Text('Trạng thái: ${user.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động'}'),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Đóng')),
         ],
       ),
     );
@@ -189,7 +189,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Manage User',
+                'Quản lý người dùng',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -210,7 +210,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search by name, email or phone',
+                    hintText: 'Tìm kiếm theo tên, email hoặc số điện thoại',
                     prefixIcon: const Icon(Icons.search),
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -241,7 +241,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           const SizedBox(height: 16),
 
           Text(
-            'Total Users: $_totalRecords',
+            'Tổng số người dùng: $_totalRecords',
             style: const TextStyle(fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
@@ -251,7 +251,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _users.isEmpty
-                ? const Center(child: Text('No users found.'))
+                ? const Center(child: Text('Không tìm thấy người dùng nào.'))
                 : ListView.separated(
                     itemCount: _users.length,
                     separatorBuilder: (context, index) => const SizedBox(height: 8),
@@ -292,7 +292,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            user.email ?? 'No email',
+                                            user.email ?? 'Chưa có email',
                                             style: const TextStyle(color: Colors.black87, fontSize: 13),
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -305,7 +305,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         const Icon(Icons.phone_outlined, size: 14, color: Colors.black54),
                                         const SizedBox(width: 4),
                                         Text(
-                                          user.phoneNumber ?? 'No phone',
+                                          user.phoneNumber ?? 'Chưa có SĐT',
                                           style: const TextStyle(color: Colors.black87, fontSize: 13),
                                         ),
                                         const Padding(
@@ -339,7 +339,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           border: Border.all(color: Colors.grey.shade400)
                                         ),
                                         child: Text(
-                                          user.isActive ? 'Active' : 'Inactive',
+                                          user.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động',
                                           style: const TextStyle(color: Colors.black87, fontSize: 11),
                                         ),
                                       ),
@@ -358,16 +358,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         itemBuilder: (BuildContext context) => [
                                           const PopupMenuItem(
                                             value: 'detail',
-                                            child: Text('Detail'),
+                                            child: Text('Chi tiết'),
                                           ),
                                           const PopupMenuItem(
                                             value: 'edit',
-                                            child: Text('Edit'),
+                                            child: Text('Chỉnh sửa'),
                                           ),
                                           if (user.isActive)
                                             const PopupMenuItem(
                                               value: 'deactivate',
-                                              child: Text('Deactivate'),
+                                              child: Text('Vô hiệu hoá'),
                                             ),
                                         ],
                                       ),
@@ -497,7 +497,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
     final isEditing = widget.user != null;
     
     return AlertDialog(
-      title: Text(isEditing ? 'Edit User' : 'Add New User'),
+      title: Text(isEditing ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'),
       content: SingleChildScrollView(
         child: SizedBox(
           width: 400,
@@ -508,15 +508,15 @@ class _UserFormDialogState extends State<_UserFormDialog> {
               children: [
                 TextFormField(
                   initialValue: _fullName,
-                  decoration: const InputDecoration(labelText: 'Full Name *', border: OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  decoration: const InputDecoration(labelText: 'Họ và tên *', border: OutlineInputBorder()),
+                  validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
                   onSaved: (v) => _fullName = v!,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   initialValue: _username,
-                  decoration: const InputDecoration(labelText: 'Username *', border: OutlineInputBorder()),
-                  validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                  decoration: const InputDecoration(labelText: 'Tên đăng nhập *', border: OutlineInputBorder()),
+                  validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
                   onSaved: (v) => _username = v!,
                 ),
                 const SizedBox(height: 16),
@@ -526,7 +526,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                   validator: (v) {
                     if (v != null && v.isNotEmpty) {
                       final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(v)) return 'Invalid email format';
+                      if (!emailRegex.hasMatch(v)) return 'Định dạng email không hợp lệ';
                     }
                     return null;
                   },
@@ -535,11 +535,11 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   initialValue: _phoneNumber,
-                  decoration: const InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Số điện thoại', border: OutlineInputBorder()),
                   validator: (v) {
                     if (v != null && v.isNotEmpty) {
                       final phoneRegex = RegExp(r'^\d{10,11}$');
-                      if (!phoneRegex.hasMatch(v)) return 'Phone must be 10-11 digits';
+                      if (!phoneRegex.hasMatch(v)) return 'SĐT phải có 10-11 chữ số';
                     }
                     return null;
                   },
@@ -549,11 +549,11 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 TextFormField(
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: isEditing ? 'Password (leave blank to keep current)' : 'Password *', 
+                    labelText: isEditing ? 'Mật khẩu (để trống nếu không đổi)' : 'Mật khẩu *', 
                     border: const OutlineInputBorder()
                   ),
                   validator: (v) {
-                    if (!isEditing && (v == null || v.isEmpty)) return 'Required for new user';
+                    if (!isEditing && (v == null || v.isEmpty)) return 'Bắt buộc đối với người dùng mới';
                     return null;
                   },
                   onSaved: (v) => _password = v,
@@ -561,7 +561,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   initialValue: _roleId,
-                  decoration: const InputDecoration(labelText: 'Role *', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Vai trò *', border: OutlineInputBorder()),
                   items: widget.roles.map((r) => DropdownMenuItem<int>(
                     value: r.id,
                     child: Text(r.name),
@@ -572,9 +572,9 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int?>(
                   initialValue: _branchId,
-                  decoration: const InputDecoration(labelText: 'Branch (Optional)', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(labelText: 'Chi nhánh (Tùy chọn)', border: OutlineInputBorder()),
                   items: [
-                    const DropdownMenuItem<int?>(value: null, child: Text('None / Head Office')),
+                    const DropdownMenuItem<int?>(value: null, child: Text('Không / Trụ sở chính')),
                     ...widget.branches.map((b) => DropdownMenuItem<int?>(
                       value: b.id,
                       child: Text(b.name),
@@ -585,7 +585,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Is Active'),
+                  title: const Text('Đang hoạt động'),
                   value: _isActive,
                   onChanged: (v) => setState(() => _isActive = v),
                 )
@@ -595,8 +595,8 @@ class _UserFormDialogState extends State<_UserFormDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        ElevatedButton(onPressed: _submit, child: const Text('Save')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy')),
+        ElevatedButton(onPressed: _submit, child: const Text('Lưu')),
       ],
     );
   }

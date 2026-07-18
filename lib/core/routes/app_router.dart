@@ -17,6 +17,7 @@ import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_detail_
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_create_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_edit_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_staff_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
@@ -27,8 +28,13 @@ import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_invoice_detail
 
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
-import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_performance_screen.dart';
-
+import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/branch_form_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/category_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/supplier_list_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/staff_management_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/purchase_requests_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/purchase_request_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
@@ -37,6 +43,9 @@ import 'package:pharmacy_chain_fe/features/supplier/views/update_delivery_status
 import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_list_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/create_medicine_batch_screen.dart';
+
+
+import 'package:pharmacy_chain_fe/features/shared/views/staff_form_screen.dart';
 
 class AppRouter {
   static final LocalStorageService _storageService = LocalStorageService();
@@ -60,10 +69,10 @@ class AppRouter {
       }
 
       if (isLoggedIn && isGoingToAuth) {
-        if (role == 'administrator') return '/admin';
-        if (role == 'operations manager') return '/operations';
-        if (role == 'branch manager') return '/manager';
+        if (role == 'admin') return '/admin';
+        if (role == 'branchmanager' || role == 'branch manager') return '/manager';
         if (role == 'pharmacist') return '/pharmacist';
+        if (role == 'operationsmanager' || role == 'operations manager') return '/operations';
         if (role == 'supplier') return '/supplier';
 
         return '/login';
@@ -71,7 +80,7 @@ class AppRouter {
 
       // Route Guards
       if (isLoggedIn) {
-        if (location.startsWith('/admin') && role != 'administrator') {
+        if (location.startsWith('/admin') && role != 'admin') {
           return '/login';
         }
         if (location.startsWith('/operations') &&
@@ -82,6 +91,9 @@ class AppRouter {
           return '/login';
         }
         if (location.startsWith('/pharmacist') && role != 'pharmacist') {
+          return '/login';
+        }
+        if (location.startsWith('/operations') && (role != 'operationsmanager' && role != 'operations manager')) {
           return '/login';
         }
         if (location.startsWith('/supplier') && role != 'supplier') {
@@ -97,8 +109,10 @@ class AppRouter {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
       GoRoute(
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
@@ -163,6 +177,23 @@ class AppRouter {
             },
           ),
           GoRoute(
+            path: '/manager/staff',
+            builder: (context, state) => const BranchStaffScreen(),
+          ),
+          GoRoute(
+            path: '/manager/staff/new',
+            builder: (context, state) => const StaffFormScreen(),
+          ),
+          GoRoute(
+            path: '/manager/staff/edit/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'];
+              final id = idStr != null ? int.tryParse(idStr) : null;
+              return StaffFormScreen(staffId: id);
+            },
+          ),
+
+          GoRoute(
             path: '/manager/reports',
             builder: (context, state) => const BranchReportScreen(),
           ),
@@ -220,8 +251,97 @@ class AppRouter {
             builder: (context, state) => const OperationsManagerHomeScreen(),
           ),
           GoRoute(
-            path: '/operations/branch-performance',
-            builder: (context, state) => const BranchPerformanceScreen(),
+            path: '/operations/branches',
+            builder: (context, state) => const BranchListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/branches/new',
+            builder: (context, state) => const BranchFormScreen(),
+          ),
+          GoRoute(
+            path: '/operations/branches/edit/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'];
+              final id = idStr != null ? int.tryParse(idStr) : null;
+              return BranchFormScreen(branchId: id);
+            },
+          ),
+          GoRoute(
+            path: '/operations/categories',
+            builder: (context, state) => const CategoryListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/suppliers',
+            builder: (context, state) => const SupplierListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff',
+            builder: (context, state) => const StaffManagementScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff/new',
+            builder: (context, state) => const StaffFormScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff/edit/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'];
+              final id = idStr != null ? int.tryParse(idStr) : null;
+              return StaffFormScreen(staffId: id);
+            },
+          ),
+          GoRoute(
+            path: '/operations/branches',
+            builder: (context, state) => const BranchListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/branches/new',
+            builder: (context, state) => const BranchFormScreen(),
+          ),
+          GoRoute(
+            path: '/operations/branches/edit/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'];
+              final id = idStr != null ? int.tryParse(idStr) : null;
+              return BranchFormScreen(branchId: id);
+            },
+          ),
+          GoRoute(
+            path: '/operations/categories',
+            builder: (context, state) => const CategoryListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/suppliers',
+            builder: (context, state) => const SupplierListScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff',
+            builder: (context, state) => const StaffManagementScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff/new',
+            builder: (context, state) => const StaffFormScreen(),
+          ),
+          GoRoute(
+            path: '/operations/staff/edit/:id',
+            builder: (context, state) {
+              final idStr = state.pathParameters['id'];
+              final id = idStr != null ? int.tryParse(idStr) : null;
+              return StaffFormScreen(staffId: id);
+            },
+          ),
+          GoRoute(
+            path: '/operations/purchase-requests',
+            builder: (context, state) => const PurchaseRequestsScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return PurchaseRequestDetailScreen(requestId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),
