@@ -44,7 +44,6 @@ import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_list_sc
 import 'package:pharmacy_chain_fe/features/supplier/views/medicine_batch_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/create_medicine_batch_screen.dart';
 
-
 import 'package:pharmacy_chain_fe/features/shared/views/staff_form_screen.dart';
 
 class AppRouter {
@@ -69,10 +68,10 @@ class AppRouter {
       }
 
       if (isLoggedIn && isGoingToAuth) {
-        if (role == 'admin') return '/admin';
-        if (role == 'branchmanager' || role == 'branch manager') return '/manager';
+        if (role == 'administrator') return '/admin';
+        if (role == 'operations manager') return '/operations';
+        if (role == 'branch manager') return '/manager';
         if (role == 'pharmacist') return '/pharmacist';
-        if (role == 'operationsmanager' || role == 'operations manager') return '/operations';
         if (role == 'supplier') return '/supplier';
 
         return '/login';
@@ -80,7 +79,7 @@ class AppRouter {
 
       // Route Guards
       if (isLoggedIn) {
-        if (location.startsWith('/admin') && role != 'admin') {
+        if (location.startsWith('/admin') && role != 'administrator') {
           return '/login';
         }
         if (location.startsWith('/operations') &&
@@ -91,9 +90,6 @@ class AppRouter {
           return '/login';
         }
         if (location.startsWith('/pharmacist') && role != 'pharmacist') {
-          return '/login';
-        }
-        if (location.startsWith('/operations') && (role != 'operationsmanager' && role != 'operations manager')) {
           return '/login';
         }
         if (location.startsWith('/supplier') && role != 'supplier') {
@@ -109,10 +105,7 @@ class AppRouter {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
@@ -385,8 +378,12 @@ class AppRouter {
                 builder: (context, state) {
                   final orderIdStr = state.uri.queryParameters['orderId'];
                   final detailIdStr = state.uri.queryParameters['detailId'];
-                  final orderId = orderIdStr != null ? int.tryParse(orderIdStr) : null;
-                  final detailId = detailIdStr != null ? int.tryParse(detailIdStr) : null;
+                  final orderId = orderIdStr != null
+                      ? int.tryParse(orderIdStr)
+                      : null;
+                  final detailId = detailIdStr != null
+                      ? int.tryParse(detailIdStr)
+                      : null;
                   return CreateMedicineBatchScreen(
                     preSelectedOrderId: orderId,
                     preSelectedDetailId: detailId,
