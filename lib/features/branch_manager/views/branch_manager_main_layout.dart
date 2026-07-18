@@ -13,8 +13,11 @@ class BranchManagerMainLayout extends StatelessWidget {
     if (location.startsWith('/manager/medicines')) {
       return 1;
     }
-    if (location.startsWith('/manager/reports')) {
+    if (location.startsWith('/manager/staff')) {
       return 2;
+    }
+    if (location.startsWith('/manager/reports')) {
+      return 3;
     }
     return 0; // default to dashboard
   }
@@ -28,6 +31,9 @@ class BranchManagerMainLayout extends StatelessWidget {
         context.go('/manager/medicines');
         break;
       case 2:
+        context.go('/manager/staff');
+        break;
+      case 3:
         context.go('/manager/reports');
         break;
     }
@@ -86,6 +92,10 @@ class BranchManagerMainLayout extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
             label: 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Nhân sự',
           ),
         ],
       ),
