@@ -192,7 +192,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 'Quản lý người dùng',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Colors.white,
                 ),
               ),
               IconButton(
@@ -261,7 +261,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Colors.grey.shade300),
+                          side: const BorderSide(color: Color(0xFF1E3A5F)),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
@@ -271,8 +271,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               // Avatar
                               CircleAvatar(
                                 radius: 24,
-                                backgroundColor: Colors.grey[200],
-                                child: const Icon(Icons.person_outline, size: 30, color: Colors.black54),
+                                backgroundColor: const Color(0xFF1E3A5F),
+                                child: const Icon(Icons.person_outline, size: 30, color: Color(0xFF60ABFF)),
                               ),
                               const SizedBox(width: 12),
                               
@@ -288,12 +288,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        const Icon(Icons.email_outlined, size: 14, color: Colors.black54),
+                                        const Icon(Icons.email_outlined, size: 14, color: Color(0xFF60ABFF)),
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
                                             user.email ?? 'Chưa có email',
-                                            style: const TextStyle(color: Colors.black87, fontSize: 13),
+                                            style: const TextStyle(color: Colors.white70, fontSize: 13),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -302,20 +302,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        const Icon(Icons.phone_outlined, size: 14, color: Colors.black54),
+                                        const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF60ABFF)),
                                         const SizedBox(width: 4),
                                         Text(
                                           user.phoneNumber ?? 'Chưa có SĐT',
-                                          style: const TextStyle(color: Colors.black87, fontSize: 13),
+                                          style: const TextStyle(color: Colors.white70, fontSize: 13),
                                         ),
                                         const Padding(
                                           padding: EdgeInsets.symmetric(horizontal: 6.0),
-                                          child: Text('•', style: TextStyle(color: Colors.black54)),
+                                          child: Text('•', style: TextStyle(color: Colors.white70)),
                                         ),
                                         Expanded(
                                           child: Text(
                                             user.roleName,
-                                            style: const TextStyle(color: Colors.black87, fontSize: 13),
+                                            style: const TextStyle(color: Colors.white70, fontSize: 13),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -334,13 +334,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: user.isActive ? Colors.grey[200] : Colors.grey[300],
+                                          color: user.isActive ? const Color(0xFF00C48C).withAlpha(40) : const Color(0xFFEF5350).withAlpha(40),
                                           borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.grey.shade400)
+                                          border: Border.all(color: user.isActive ? const Color(0xFF00C48C).withAlpha(100) : const Color(0xFFEF5350).withAlpha(100))
                                         ),
                                         child: Text(
                                           user.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động',
-                                          style: const TextStyle(color: Colors.black87, fontSize: 11),
+                                          style: TextStyle(
+                                            color: user.isActive ? const Color(0xFF80FFD0) : const Color(0xFFFF8A80), 
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 4),
