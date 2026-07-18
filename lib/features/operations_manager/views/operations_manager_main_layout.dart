@@ -22,6 +22,9 @@ class OperationsManagerMainLayout extends StatelessWidget {
     if (location.startsWith('/operations/staff')) {
       return 4;
     }
+    if (location.startsWith('/operations/branch-performance')) {
+      return 5;
+    }
     return 0; // default to dashboard
   }
 
@@ -41,6 +44,9 @@ class OperationsManagerMainLayout extends StatelessWidget {
         break;
       case 4:
         context.go('/operations/staff');
+        break;
+      case 5:
+        context.go('/operations/branch-performance');
         break;
     }
   }
@@ -117,6 +123,10 @@ class OperationsManagerMainLayout extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Nhân sự',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: 'Hiệu năng',
           ),
         ],
       ),
