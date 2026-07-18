@@ -20,6 +20,8 @@ import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_scre
 
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/purchase_requests_screen.dart';
+import 'package:pharmacy_chain_fe/features/operations_manager/views/purchase_request_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/supplier_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/supplier/views/purchase_orders_screen.dart';
@@ -156,6 +158,19 @@ class AppRouter {
           GoRoute(
             path: '/operations',
             builder: (context, state) => const OperationsManagerHomeScreen(),
+          ),
+          GoRoute(
+            path: '/operations/purchase-requests',
+            builder: (context, state) => const PurchaseRequestsScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.parse(state.pathParameters['id']!);
+                  return PurchaseRequestDetailScreen(requestId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),

@@ -10,6 +10,9 @@ class OperationsManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
+    if (location.startsWith('/operations/purchase-requests')) {
+      return 1;
+    }
     return 0;
   }
 
@@ -17,6 +20,9 @@ class OperationsManagerMainLayout extends StatelessWidget {
     switch (index) {
       case 0:
         context.go('/operations');
+        break;
+      case 1:
+        context.go('/operations/purchase-requests');
         break;
     }
   }
@@ -72,6 +78,10 @@ class OperationsManagerMainLayout extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Trang chủ',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.request_page),
+            label: 'Yêu cầu nhập hàng',
           ),
         ],
       ),

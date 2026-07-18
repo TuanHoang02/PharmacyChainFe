@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_chain_fe/features/admin/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/user_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/lookup_model.dart';
 import 'package:pharmacy_chain_fe/features/admin/services/user_service.dart';
 
 class UserManagementScreen extends StatefulWidget {
@@ -62,8 +63,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       setState(() {
         _users = response.data;
         _totalRecords = response.totalRecords;
-        _totalPages = (response.totalRecords / response.pageSize).ceil();
-        if (_totalPages == 0) _totalPages = 1;
+        _totalPages = response.totalPages > 0 ? response.totalPages : 1;
       });
     } catch (e) {
       if (mounted) {
