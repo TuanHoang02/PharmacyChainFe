@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:5003';
+  static const String baseUrl = 'http://localhost:5003';
   // Use 'http://localhost:5003' for web/desktop
   // Use 'http://10.0.2.2:5003' for Android emulator
 

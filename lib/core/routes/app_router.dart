@@ -18,6 +18,9 @@ import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_create_
 import 'package:pharmacy_chain_fe/features/branch_manager/views/medicine_edit_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_staff_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_inventory_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/create_purchase_request_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/purchase_requests_screen.dart' as manager_pr;
 
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
@@ -25,6 +28,7 @@ import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_list_screen
 import 'package:pharmacy_chain_fe/features/pharmacist/views/medicine_detail_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_history_screen.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/sales_invoice_detail_screen.dart';
+import 'package:pharmacy_chain_fe/features/pharmacist/views/create_sales_invoice_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
@@ -141,9 +145,12 @@ class AppRouter {
             builder: (context, state) => const BranchManagerHomeScreen(),
           ),
           GoRoute(
+            path: '/manager/reports',
+            builder: (context, state) => const BranchReportScreen(),
+          ),
+          GoRoute(
             path: '/manager/inventory',
-            builder: (context, state) =>
-                const Scaffold(body: Center(child: Text('Manager Inventory'))),
+            builder: (context, state) => const BranchInventoryScreen(),
           ),
           GoRoute(
             path: '/manager/medicines',
@@ -185,10 +192,13 @@ class AppRouter {
               return StaffFormScreen(staffId: id);
             },
           ),
-
           GoRoute(
-            path: '/manager/reports',
-            builder: (context, state) => const BranchReportScreen(),
+            path: '/manager/purchase-requests',
+            builder: (context, state) => const manager_pr.PurchaseRequestsScreen(),
+          ),
+          GoRoute(
+            path: '/manager/purchase-request/create',
+            builder: (context, state) => const CreatePurchaseRequestScreen(),
           ),
         ],
       ),
@@ -221,10 +231,14 @@ class AppRouter {
           ),
           GoRoute(
             path: '/pharmacist/sales',
+            builder: (context, state) => const CreateSalesInvoiceScreen(),
+          ),
+          GoRoute(
+            path: '/pharmacist/sales-history',
             builder: (context, state) => const SalesHistoryScreen(),
           ),
           GoRoute(
-            path: '/pharmacist/sales/:id',
+            path: '/pharmacist/sales-history/:id',
             builder: (context, state) {
               final idStr = state.pathParameters['id'] ?? '';
               final id = int.tryParse(idStr) ?? 0;

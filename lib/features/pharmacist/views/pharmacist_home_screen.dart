@@ -7,10 +7,13 @@ class PharmacistHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0A1628),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Icon(Icons.local_pharmacy, size: 80, color: Color(0xFF00C48C)),
+            const SizedBox(height: 24),
             const Text(
               'Chào mừng Dược sĩ (Pharmacist)',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
@@ -18,7 +21,7 @@ class PharmacistHomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                context.push('/pharmacist/sales');
+                context.push('/pharmacist/sales-history');
               },
               icon: const Icon(Icons.receipt_long_rounded, color: Colors.white),
               label: const Text(

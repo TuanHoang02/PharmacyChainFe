@@ -457,7 +457,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          context.push('/pharmacist/sales/${invoice.salesInvoiceID}');
+          context.push('/pharmacist/sales-history/${invoice.salesInvoiceID}');
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(

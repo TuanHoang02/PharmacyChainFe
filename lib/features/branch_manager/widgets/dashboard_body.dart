@@ -5,6 +5,7 @@ import 'package:pharmacy_chain_fe/features/branch_manager/models/branch_dashboar
 import 'package:pharmacy_chain_fe/features/branch_manager/widgets/dashboard_kpi_card.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/widgets/dashboard_section.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/widgets/dashboard_low_stock_row.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardBody extends StatelessWidget {
   final BranchDashboard dashboard;
@@ -26,6 +27,7 @@ class DashboardBody extends StatelessWidget {
       children: [
         _buildHeader(),
         const SizedBox(height: 20),
+        
         _buildSalesSection(),
         const SizedBox(height: 16),
         _buildInventorySection(),
@@ -116,40 +118,43 @@ class DashboardBody extends StatelessWidget {
 
   Widget _buildInventorySection() {
     final i = dashboard.inventory;
-    return DashboardSection(
-      title: 'Tồn kho',
-      icon: Icons.inventory_2_outlined,
-      iconColor: const Color(0xFF60ABFF),
-      children: [
-        Row(
+    return Builder(
+      builder: (context) {
+        return DashboardSection(
+          title: 'Tồn kho',
+          icon: Icons.inventory_2_outlined,
+          iconColor: const Color(0xFF60ABFF),
           children: [
-            Expanded(
-              child: DashboardKpiCard(
-                icon: Icons.category_outlined,
-                label: 'Số SKU',
-                value: '${i.totalSkus}',
-                accent: const Color(0xFF60ABFF),
+          Row(
+            children: [
+              Expanded(
+                child: DashboardKpiCard(
+                  icon: Icons.category_outlined,
+                  label: 'Số SKU',
+                  value: '${i.totalSkus}',
+                  accent: const Color(0xFF60ABFF),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BatchInfoCard(
-                totalBatches: i.totalBatches,
-                nearExpiryBatches: i.nearExpiryBatches,
-                expiredBatches: i.expiredBatches,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _BatchInfoCard(
+                  totalBatches: i.totalBatches,
+                  nearExpiryBatches: i.nearExpiryBatches,
+                  expiredBatches: i.expiredBatches,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        DashboardKpiCard(
-          icon: Icons.account_balance_wallet_outlined,
-          label: 'Giá trị tồn kho',
-          value: moneyFormat.format(i.totalStockValue),
-          accent: const Color(0xFF00C48C),
-        ),
-      ],
-    );
+            ],
+          ),
+          const SizedBox(height: 12),
+          DashboardKpiCard(
+            icon: Icons.account_balance_wallet_outlined,
+            label: 'Giá trị tồn kho',
+            value: moneyFormat.format(i.totalStockValue),
+            accent: const Color(0xFF00C48C),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildLowStockSection() {
