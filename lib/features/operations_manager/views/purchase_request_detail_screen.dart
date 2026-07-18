@@ -259,21 +259,26 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
               itemBuilder: (context, index) {
                 final po = request.purchaseOrders[index];
                 return Card(
-                  color: const Color(0xFFE3F2FD),
+                  color: const Color(0xFF1A2E45),
                   child: ExpansionTile(
-                    title: Text(po.purchaseOrderCode, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    iconColor: const Color(0xFF60ABFF),
+                    collapsedIconColor: const Color(0xFF60ABFF),
+                    title: Text(
+                      po.purchaseOrderCode,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF60ABFF)),
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nhà cung cấp: ${po.supplierName}'),
-                        Text('Trạng thái Đơn hàng: ${po.orderStatus}'),
-                        Text('Trạng thái Giao hàng: ${po.deliveryStatus}'),
+                        Text('Nhà cung cấp: ${po.supplierName}', style: const TextStyle(color: Colors.white70)),
+                        Text('Trạng thái Đơn hàng: ${po.orderStatus}', style: const TextStyle(color: Colors.white70)),
+                        Text('Trạng thái Giao hàng: ${po.deliveryStatus}', style: const TextStyle(color: Colors.white70)),
                       ],
                     ),
                     children: po.items.map((item) {
                       return ListTile(
-                        title: Text(item.medicineName),
-                        trailing: Text('${item.orderedQuantity} ${item.unit}'),
+                        title: Text(item.medicineName, style: const TextStyle(color: Colors.white)),
+                        trailing: Text('${item.orderedQuantity} ${item.unit}', style: const TextStyle(color: Colors.white70)),
                       );
                     }).toList(),
                   ),
