@@ -1,17 +1,18 @@
 # Báo Cáo Kết Quả Triển Khai Giao Diện Frontend (Flutter)
 **Dự án**: Pharmacy Chain System (Hệ thống quản lý chuỗi nhà thuốc)  
-**Phạm vi**: Triển khai tích hợp các chức năng UC03, UC04, UC05, UC09.
+**Phạm vi**: Triển khai tích hợp các chức năng UC03, UC04, UC05, UC09 và UC13.
 
 ---
 
 ## 🏛️ 1. Phạm vi thực hiện (Scope of Work)
-Báo cáo này tóm tắt kết quả phát triển các màn hình giao diện (UI) và nghiệp vụ kết nối API phục vụ cho 4 Use Cases chính của khối quản lý hệ thống:
+Báo cáo này tóm tắt kết quả phát triển các màn hình giao diện (UI) và nghiệp vụ kết nối API phục vụ cho 5 Use Cases chính của khối quản lý hệ thống:
 1. **UC03 - Quản lý Chi nhánh (Branch Management)**: Xem danh sách, tìm kiếm, lọc, tạo mới, chỉnh sửa thông tin chi nhánh và khóa hoạt động chi nhánh.
 2. **UC04 - Quản lý Danh mục thuốc (Category Management)**: CRUD phân loại danh mục thuốc thông qua popup tương tác nhanh.
 3. **UC05 - Quản lý Nhà cung cấp (Supplier Management)**: Quản lý thông tin liên hệ và trạng thái của các đối tác cung ứng dược phẩm.
 4. **UC09 - Quản lý Nhân viên (Staff Management)**:
    - **Operations Manager**: Quản lý toàn bộ nhân sự hệ thống, phân bổ nhân sự vào các chi nhánh khác nhau.
    - **Branch Manager**: Chỉ xem và quản trị (thêm/sửa/xóa mềm) các dược sĩ thuộc chi nhánh do chính mình phụ trách.
+5. **UC13 - Dashboard Báo cáo (Reporting Dashboard)**: Hiển thị các chỉ số tài chính (Doanh thu, Lợi nhuận, Chi phí nhập hàng, Tổng đơn hàng) và biểu đồ phân tích cùng danh sách cảnh báo tồn kho thấp/lô hàng sắp hết hạn/thuốc bán chạy.
 
 ---
 
@@ -32,6 +33,7 @@ Báo cáo này tóm tắt kết quả phát triển các màn hình giao diện 
 | **`staff_management_screen.dart`**| `lib/features/operations_manager/views/` | Màn hình quản lý toàn bộ nhân viên chuỗi dành cho Operations Manager. |
 | **`branch_staff_screen.dart`** | `lib/features/branch_manager/views/` | Màn hình quản lý nhân viên nội bộ chi nhánh của Branch Manager. |
 | **`staff_form_screen.dart`** | `lib/features/shared/views/` | Form chung tạo/sửa tài khoản nhân sự (tự động khóa chi nhánh theo role). |
+| **`dashboard_service.dart`** | `lib/shared/services/` | Gọi API `/api/Dashboard/summary` lấy chỉ số phân tích. |
 
 ---
 
@@ -41,6 +43,7 @@ Báo cáo này tóm tắt kết quả phát triển các màn hình giao diện 
 2. **`local_storage_service.dart`** (`lib/core/network/`): Viết thuật toán tự giải mã payload của JWT Token (`_decodeJwt`) để tự động tách claim `BranchID` lưu trữ vào SharedPreferences khi đăng nhập thành công.
 3. **`api_constants.dart`** (`lib/core/constants/`): Cấu hình dynamic getter tự động nhận diện thiết bị chạy (trả về cổng `localhost:5003` trên Windows Desktop và `10.0.2.2:5003` trên máy ảo Android).
 4. **`operations_manager_main_layout.dart`** & **`branch_manager_main_layout.dart`**: Cấu hình các Tabs điều hướng BottomNavigationBar chuyển màn hình tương ứng.
+5. **`operations_manager_home_screen.dart`** & **`branch_manager_home_screen.dart`**: Triển khai giao diện Dashboard báo cáo thống kê chuỗi cửa hàng và chi nhánh (UC13).
 
 ---
 
@@ -57,5 +60,5 @@ Báo cáo này tóm tắt kết quả phát triển các màn hình giao diện 
 1. Đảm bảo cổng Backend .NET chạy tại cổng `5003`.
 2. Khởi chạy ứng dụng Frontend trên thiết bị bất kỳ (`flutter run`).
 3. Đăng nhập với tài khoản:
-   - **Operations Manager**: `opsmanager@gmail.com` / `123456`
-   - **Branch Manager**: `branchmanager@gmail.com` / `123456`
+   - **Operations Manager**: `operations@pharmacychain.vn` / `123456`
+   - **Branch Manager**: `long.manager@pharmacychain.vn` / `123456`

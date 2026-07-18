@@ -76,7 +76,7 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
       } else {
         // For Branch Manager, branch is fixed
         _selectedBranchId = _currentUserBranchId;
-        _selectedRoleId = 3; // Fixed to Pharmacist
+        _selectedRoleId = 4; // Fixed to Pharmacist
       }
 
       // 3. If Edit Mode, fetch staff details
@@ -91,7 +91,7 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
       } else {
         // Set defaults for create mode
         if (_currentUserRole.contains('operations')) {
-          _selectedRoleId = 3; // Default to Pharmacist
+          _selectedRoleId = 4; // Default to Pharmacist
         }
       }
 
@@ -333,8 +333,8 @@ class _StaffFormScreenState extends State<StaffFormScreen> {
                             prefixIcon: Icon(Icons.security),
                           ),
                           items: const [
-                            DropdownMenuItem(value: 3, child: Text('Pharmacist (Dược sĩ)')),
-                            DropdownMenuItem(value: 4, child: Text('BranchManager (Quản lý chi nhánh)')),
+                            DropdownMenuItem(value: 4, child: Text('Pharmacist (Dược sĩ)')),
+                            DropdownMenuItem(value: 3, child: Text('BranchManager (Quản lý chi nhánh)')),
                           ],
                           onChanged: (val) {
                             setState(() {
