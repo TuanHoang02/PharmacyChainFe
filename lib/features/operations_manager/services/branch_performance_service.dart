@@ -18,7 +18,7 @@ class BranchPerformanceService {
       query += '&endDate=${endDate.toIso8601String()}';
     }
 
-    final response = await _apiClient.get(Uri.parse('${ApiConstants.branchPerformance}$query'));
+    final response = await _apiClient.get(Uri.parse('${ApiConstants.baseUrl}${ApiConstants.branchPerformance}$query'));
 
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);

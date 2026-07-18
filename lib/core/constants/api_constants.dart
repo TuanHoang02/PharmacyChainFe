@@ -6,7 +6,7 @@ class ApiConstants {
   static const String login = '/api/Auth/login';
   static const String logout = '/api/Auth/logout';
   static const String changePassword = '/api/Auth/change-password';
-  static const String branchPerformance = '/api/branch-performance';
+  static const String branchPerformance = '/api/operations-manager/branch-performance';
 
   static const String purchaseOrders = '/api/PurchaseOrders';
   static const String branchDashboard = '/api/BranchDashboard';
