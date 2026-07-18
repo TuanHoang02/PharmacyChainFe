@@ -14,9 +14,13 @@ import 'package:pharmacy_chain_fe/features/admin/views/user_management_screen.da
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_manager_home_screen.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_report_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/branch_inventory_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/create_purchase_request_screen.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/views/purchase_requests_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/views/pharmacist_home_screen.dart';
+import 'package:pharmacy_chain_fe/features/pharmacist/views/create_sales_invoice_screen.dart';
 
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_main_layout.dart';
 import 'package:pharmacy_chain_fe/features/operations_manager/views/operations_manager_home_screen.dart';
@@ -122,12 +126,20 @@ class AppRouter {
             builder: (context, state) => const BranchManagerHomeScreen(),
           ),
           GoRoute(
-            path: '/manager/inventory',
-            builder: (context, state) => const Scaffold(body: Center(child: Text('Manager Inventory'))),
-          ),
-          GoRoute(
             path: '/manager/reports',
             builder: (context, state) => const BranchReportScreen(),
+          ),
+          GoRoute(
+            path: '/manager/inventory',
+            builder: (context, state) => const BranchInventoryScreen(),
+          ),
+          GoRoute(
+            path: '/manager/purchase-requests',
+            builder: (context, state) => const PurchaseRequestsScreen(),
+          ),
+          GoRoute(
+            path: '/manager/purchase-request/create',
+            builder: (context, state) => const CreatePurchaseRequestScreen(),
           ),
         ],
       ),
@@ -147,6 +159,10 @@ class AppRouter {
           GoRoute(
             path: '/pharmacist/medicines',
             builder: (context, state) => const Scaffold(body: Center(child: Text('Pharmacist Medicines'))),
+          ),
+          GoRoute(
+            path: '/pharmacist/sales',
+            builder: (context, state) => const CreateSalesInvoiceScreen(),
           ),
         ],
       ),

@@ -16,6 +16,9 @@ class PharmacistMainLayout extends StatelessWidget {
     if (location.startsWith('/pharmacist/medicines')) {
       return 2;
     }
+    if (location.startsWith('/pharmacist/sales')) {
+      return 3;
+    }
     return 0;
   }
 
@@ -29,6 +32,9 @@ class PharmacistMainLayout extends StatelessWidget {
         break;
       case 2:
         context.go('/pharmacist/medicines');
+        break;
+      case 3:
+        context.go('/pharmacist/sales');
         break;
     }
   }
@@ -80,6 +86,7 @@ class PharmacistMainLayout extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.medical_services),
@@ -92,6 +99,10 @@ class PharmacistMainLayout extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.medication),
             label: 'Medicines',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart_checkout),
+            label: 'Bán hàng',
           ),
         ],
       ),
