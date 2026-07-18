@@ -10,7 +10,7 @@ class BranchManagerMainLayout extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/manager/inventory')) {
+    if (location.startsWith('/manager/medicines')) {
       return 1;
     }
     if (location.startsWith('/manager/reports')) {
@@ -25,7 +25,7 @@ class BranchManagerMainLayout extends StatelessWidget {
         context.go('/manager');
         break;
       case 1:
-        context.go('/manager/inventory');
+        context.go('/manager/medicines');
         break;
       case 2:
         context.go('/manager/reports');
@@ -73,7 +73,7 @@ class BranchManagerMainLayout extends StatelessWidget {
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
       body: child,
@@ -81,14 +81,8 @@ class BranchManagerMainLayout extends StatelessWidget {
         currentIndex: _calculateSelectedIndex(context),
         onTap: (index) => _onItemTapped(index, context),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.store),
-            label: 'Branch',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Inventory',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Branch'),
+          BottomNavigationBarItem(icon: Icon(Icons.medication), label: 'Medicines'),
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics),
             label: 'Reports',

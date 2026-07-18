@@ -35,18 +35,20 @@ class _SplashScreenState extends State<SplashScreen> {
           backgroundColor: const Color(0xFF00C48C),
         ),
       );
-      
+
       final normalizedRole = role?.toLowerCase() ?? '';
-      if (normalizedRole == 'admin') {
+      if (normalizedRole == 'administrator') {
         context.go('/admin');
-      } else if (normalizedRole == 'branchmanager' || normalizedRole == 'branch manager') {
+      } else if (normalizedRole == 'branch manager') {
         context.go('/manager');
       } else if (normalizedRole == 'pharmacist') {
         context.go('/pharmacist');
-      } else if (normalizedRole == 'operationsmanager' || normalizedRole == 'operations manager') {
+      } else if (normalizedRole == 'operations manager') {
         context.go('/operations');
       } else if (normalizedRole == 'supplier') {
         context.go('/supplier');
+      } else {
+        // Nếu role không hợp lệ, đăng xuất / quay về màn login
         context.go('/login');
       }
     } else {
@@ -98,9 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 40),
-            const CircularProgressIndicator(
-              color: Color(0xFF00C48C),
-            ),
+            const CircularProgressIndicator(color: Color(0xFF00C48C)),
           ],
         ),
       ),
