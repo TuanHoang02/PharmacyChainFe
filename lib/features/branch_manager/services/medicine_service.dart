@@ -3,6 +3,7 @@ import 'package:pharmacy_chain_fe/core/constants/api_constants.dart';
 import 'package:pharmacy_chain_fe/core/network/api_client.dart';
 import 'package:pharmacy_chain_fe/shared/models/base_api_response.dart';
 import 'package:pharmacy_chain_fe/shared/models/medicine_model.dart';
+import 'package:pharmacy_chain_fe/shared/models/paged_response.dart';
 
 class MedicineService {
   final ApiClient _apiClient = ApiClient();
@@ -197,7 +198,13 @@ class MedicineService {
 
   /// Encapsulated Category Retrieval
   Future<List<CategoryModel>> getCategories() async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}').replace(
+      queryParameters: {
+        'pageNumber': '1',
+        'pageSize': '1000',
+        'isActive': 'true',
+      },
+    );
     try {
       final response = await _apiClient.get(
         uri,
@@ -206,15 +213,21 @@ class MedicineService {
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-        final apiResponse = BaseApiResponse<List<dynamic>>.fromJson(
+        final baseResponse = BaseApiResponse<PagedResponse<List<CategoryModel>>>.fromJson(
           responseBody,
-          (json) => json as List<dynamic>,
+          (dataJson) {
+            return PagedResponse<List<CategoryModel>>.fromJson(
+              dataJson as Map<String, dynamic>,
+              (listJson) {
+                final list = listJson as List<dynamic>;
+                return list.map((item) => CategoryModel.fromJson(item as Map<String, dynamic>)).toList();
+              },
+            );
+          },
         );
 
-        if (apiResponse.success && apiResponse.data != null) {
-          return apiResponse.data!
-              .map((item) => CategoryModel.fromJson(item as Map<String, dynamic>))
-              .toList();
+        if (baseResponse.success && baseResponse.data != null) {
+          return baseResponse.data!.data;
         }
       }
     } catch (_) {

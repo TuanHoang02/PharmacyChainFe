@@ -276,6 +276,12 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
           ),
         ),
       ),
+      floatingActionButtonLocation: _medicines.isNotEmpty
+          ? const _OffsetFloatingActionButtonLocation(
+              FloatingActionButtonLocation.endFloat,
+              offsetY: -75,
+            )
+          : null,
     );
   }
 
@@ -845,3 +851,22 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
     );
   }
 }
+
+class _OffsetFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  final FloatingActionButtonLocation location;
+  final double offsetX;
+  final double offsetY;
+
+  const _OffsetFloatingActionButtonLocation(
+    this.location, {
+    this.offsetX = 0,
+    this.offsetY = 0,
+  });
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx + offsetX, offset.dy + offsetY);
+  }
+}
+

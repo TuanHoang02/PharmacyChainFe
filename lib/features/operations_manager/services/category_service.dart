@@ -53,7 +53,7 @@ class CategoryService {
       queryParams['isActive'] = isActive.toString();
     }
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}/api/Category').replace(queryParameters: queryParams);
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}').replace(queryParameters: queryParams);
     final response = await _apiClient.get(uri);
 
     if (response.statusCode == 200) {
@@ -83,7 +83,7 @@ class CategoryService {
     required String categoryName,
     String? description,
   }) async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}/api/Category');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}');
     final response = await _apiClient.post(
       uri,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
@@ -116,7 +116,7 @@ class CategoryService {
     String? description,
     required bool isActive,
   }) async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}/api/Category/$id');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}/$id');
     final response = await _apiClient.put(
       uri,
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
@@ -145,7 +145,7 @@ class CategoryService {
   }
 
   Future<void> deleteCategory(int id) async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}/api/Category/$id');
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categories}/$id');
     final response = await _apiClient.delete(uri);
 
     if (response.statusCode != 200) {
