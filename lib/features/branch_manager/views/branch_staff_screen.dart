@@ -14,6 +14,47 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
   final StaffService _staffService = StaffService();
   final LocalStorageService _storageService = LocalStorageService();
 
+  Widget _buildRoleBadge(String roleName) {
+    Color badgeColor;
+    Color textColor;
+    String displayRole = roleName;
+    
+    final roleLower = roleName.toLowerCase();
+    if (roleLower.contains('pharmacist') || roleLower.contains('dược sĩ')) {
+      badgeColor = Colors.teal.withOpacity(0.15);
+      textColor = Colors.teal[300]!;
+      displayRole = 'Dược sĩ';
+    } else if (roleLower.contains('branchmanager') || roleLower.contains('quản lý')) {
+      badgeColor = Colors.orange.withOpacity(0.15);
+      textColor = Colors.orange[300]!;
+      displayRole = 'Quản lý';
+    } else if (roleLower.contains('operationsmanager') || roleLower.contains('vận hành')) {
+      badgeColor = Colors.purple.withOpacity(0.15);
+      textColor = Colors.purple[300]!;
+      displayRole = 'Vận hành';
+    } else {
+      badgeColor = Colors.blue.withOpacity(0.15);
+      textColor = Colors.blue[300]!;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        displayRole,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+
   bool _isLoading = false;
   String _searchTerm = '';
   int? _currentUserBranchId;
@@ -308,87 +349,122 @@ class _BranchStaffScreenState extends State<BranchStaffScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(color: const Color(0xFF1E3A5F)),
                                 ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.all(16),
-                                  leading: CircleAvatar(
-                                    backgroundColor: const Color(0xFF0A1628),
-                                    child: const Icon(Icons.medical_services, color: Color(0xFF00C48C)),
-                                  ),
-                                  title: Row(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
+                                      // Leading avatar
+                                      CircleAvatar(
+                                        backgroundColor: const Color(0xFF0A1628),
+                                        child: const Icon(Icons.medical_services, color: Color(0xFF00C48C)),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Content
                                       Expanded(
-                                        child: Text(
-                                          staff.fullName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: staff.isActive
-                                              ? const Color(0xFF00C48C).withOpacity(0.1)
-                                              : Colors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(4),
-                                          border: Border.all(
-                                            color: staff.isActive
-                                                ? const Color(0xFF00C48C).withOpacity(0.3)
-                                                : Colors.red.withOpacity(0.3),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          staff.isActive ? 'Active' : 'Locked',
-                                          style: TextStyle(
-                                            color: staff.isActive ? const Color(0xFF00C48C) : Colors.redAccent,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            const Icon(Icons.security, size: 14, color: Color(0xFF8FA8C9)),
-                                            const SizedBox(width: 6),
-                                            Text(staff.roleName, style: const TextStyle(color: Color(0xFF8FA8C9))),
-                                            const SizedBox(width: 16),
-                                            const Icon(Icons.phone, size: 14, color: Color(0xFF8FA8C9)),
-                                            const SizedBox(width: 6),
-                                            Text(staff.phoneNumber ?? 'Chưa có SĐT', style: const TextStyle(color: Color(0xFF8FA8C9))),
+                                            // Name + Status badge
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    staff.fullName,
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 16,
+                                                      color: Colors.white,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: staff.isActive
+                                                        ? const Color(0xFF00C48C).withOpacity(0.1)
+                                                        : Colors.red.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                    border: Border.all(
+                                                      color: staff.isActive
+                                                          ? const Color(0xFF00C48C).withOpacity(0.3)
+                                                          : Colors.red.withOpacity(0.3),
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    staff.isActive ? 'Active' : 'Locked',
+                                                    style: TextStyle(
+                                                      color: staff.isActive ? const Color(0xFF00C48C) : Colors.redAccent,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 6),
+                                            // Role badge & Branch name
+                                            Row(
+                                              children: [
+                                                _buildRoleBadge(staff.roleName),
+                                                const SizedBox(width: 8),
+                                                const Icon(Icons.storefront, size: 14, color: Color(0xFF8FA8C9)),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    staff.branchName ?? 'Toàn chuỗi',
+                                                    style: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 6),
+                                            // Phone & Email
+                                            Row(
+                                              children: [
+                                                if (staff.phoneNumber != null && staff.phoneNumber!.isNotEmpty) ...[
+                                                  const Icon(Icons.phone, size: 14, color: Color(0xFF8FA8C9)),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    staff.phoneNumber!,
+                                                    style: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                ],
+                                                if (staff.email != null && staff.email!.isNotEmpty) ...[
+                                                  const Icon(Icons.email, size: 14, color: Color(0xFF8FA8C9)),
+                                                  const SizedBox(width: 4),
+                                                  Expanded(
+                                                    child: Text(
+                                                      staff.email!,
+                                                      style: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 13),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
                                           ],
                                         ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.email, size: 14, color: Color(0xFF8FA8C9)),
-                                            const SizedBox(width: 6),
-                                            Text(staff.email ?? 'Chưa có email', style: const TextStyle(color: Color(0xFF8FA8C9))),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Color(0xFF1E88E5)),
-                                        onPressed: () => context
-                                            .push('/manager/staff/edit/${staff.userID}')
-                                            .then((_) => _fetchStaff()),
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.lock_outline, color: Colors.redAccent),
-                                        onPressed: () => _deleteStaff(staff),
+                                      // Action buttons
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Color(0xFF1E88E5)),
+                                            onPressed: () => context
+                                                .push('/manager/staff/edit/${staff.userID}')
+                                                .then((_) => _fetchStaff()),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.lock_outline, color: Colors.redAccent),
+                                            onPressed: () => _deleteStaff(staff),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

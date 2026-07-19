@@ -98,7 +98,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
             return AlertDialog(
               title: Text(supplier == null ? 'Thêm nhà cung cấp mới' : 'Cập nhật nhà cung cấp'),
               content: SizedBox(
-                width: 450,
+                width: MediaQuery.of(context).size.width > 500 ? 450 : MediaQuery.of(context).size.width * 0.85,
                 child: SingleChildScrollView(
                   child: Form(
                     key: formKey,
@@ -464,23 +464,26 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Nhà cung cấp',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Nhà cung cấp',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Quản lý danh sách đối tác cung cấp dược phẩm',
-                              style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Quản lý danh sách đối tác cung cấp dược phẩm',
+                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
@@ -618,126 +621,108 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       color: theme.cardColor,
-                                      child: ListTile(
-                                        contentPadding: const EdgeInsets.all(16),
-                                        title: Row(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
+                                            // Content
                                             Expanded(
-                                              child: Text(
-                                                supplier.supplierName,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: supplier.isActive
-                                                    ? Colors.teal.withOpacity(0.15)
-                                                    : Colors.red.withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(4),
-                                                border: Border.all(
-                                                  color: supplier.isActive ? Colors.teal[400]! : Colors.red[400]!,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                supplier.isActive ? 'Hoạt động' : 'Tạm dừng',
-                                                style: TextStyle(
-                                                  color: supplier.isActive ? Colors.teal[300] : Colors.red[300],
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              if (supplier.username != null && supplier.username!.isNotEmpty) ...[
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.account_box, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      'Tài khoản: ${supplier.username!}',
-                                                      style: TextStyle(color: theme.hintColor, fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                              ],
-                                              if (supplier.contactName != null && supplier.contactName!.isNotEmpty) ...[
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.person, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      'Người liên hệ: ${supplier.contactName!}',
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                              ],
-                                              if (supplier.phoneNumber != null && supplier.phoneNumber!.isNotEmpty) ...[
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.phone, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      supplier.phoneNumber!,
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                              ],
-                                              if (supplier.email != null && supplier.email!.isNotEmpty) ...[
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.email, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      supplier.email!,
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                              ],
-                                              if (supplier.address != null && supplier.address!.isNotEmpty) ...[
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.location_on, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Expanded(
-                                                      child: Text(
-                                                        supplier.address!,
-                                                        style: TextStyle(color: theme.hintColor),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  // Name + Status badge
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          supplier.supplierName,
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 16,
+                                                            color: Colors.white,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
                                                       ),
-                                                    ),
+                                                      const SizedBox(width: 6),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                          color: supplier.isActive
+                                                              ? Colors.teal.withOpacity(0.15)
+                                                              : Colors.red.withOpacity(0.15),
+                                                          borderRadius: BorderRadius.circular(4),
+                                                          border: Border.all(
+                                                            color: supplier.isActive ? Colors.teal[400]! : Colors.red[400]!,
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          supplier.isActive ? 'Hoạt động' : 'Tạm dừng',
+                                                          style: TextStyle(
+                                                            color: supplier.isActive ? Colors.teal[300] : Colors.red[300],
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  if (supplier.username != null && supplier.username!.isNotEmpty) ...[
+                                                    Row(children: [
+                                                      Icon(Icons.account_box, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text('Tài khoản: ${supplier.username!}', style: TextStyle(color: theme.hintColor, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                    const SizedBox(height: 4),
                                                   ],
+                                                  if (supplier.contactName != null && supplier.contactName!.isNotEmpty) ...[
+                                                    Row(children: [
+                                                      Icon(Icons.person, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text('Người liên hệ: ${supplier.contactName!}', style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                    const SizedBox(height: 4),
+                                                  ],
+                                                  if (supplier.phoneNumber != null && supplier.phoneNumber!.isNotEmpty) ...[
+                                                    Row(children: [
+                                                      Icon(Icons.phone, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text(supplier.phoneNumber!, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                    const SizedBox(height: 4),
+                                                  ],
+                                                  if (supplier.email != null && supplier.email!.isNotEmpty) ...[
+                                                    Row(children: [
+                                                      Icon(Icons.email, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text(supplier.email!, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                    const SizedBox(height: 4),
+                                                  ],
+                                                  if (supplier.address != null && supplier.address!.isNotEmpty)
+                                                    Row(children: [
+                                                      Icon(Icons.location_on, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text(supplier.address!, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                ],
+                                              ),
+                                            ),
+                                            // Action buttons
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.edit, color: Colors.blue),
+                                                  onPressed: () => _openSupplierDialog(supplier: supplier),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                                  onPressed: () => _deleteSupplier(supplier),
                                                 ),
                                               ],
-                                            ],
-                                          ),
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, color: Colors.blue),
-                                              onPressed: () => _openSupplierDialog(supplier: supplier),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, color: Colors.red),
-                                              onPressed: () => _deleteSupplier(supplier),
                                             ),
                                           ],
                                         ),

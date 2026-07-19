@@ -160,29 +160,31 @@ class _BranchListScreenState extends State<BranchListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Row
-                    Row(
+                          Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Danh sách chi nhánh',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Danh sách chi nhánh',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Quản lý tất cả chi nhánh trong chuỗi nhà thuốc',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.hintColor,
+                              const SizedBox(height: 4),
+                              Text(
+                                'Quản lý tất cả chi nhánh trong chuỗi nhà thuốc',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.hintColor,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
@@ -333,100 +335,93 @@ class _BranchListScreenState extends State<BranchListScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       color: theme.cardColor,
-                                      child: ListTile(
-                                        contentPadding: const EdgeInsets.all(16),
-                                        title: Row(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
+                                            // Content
                                             Expanded(
-                                              child: Text(
-                                                branch.branchName,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: branch.isActive
-                                                    ? Colors.teal.withOpacity(0.15)
-                                                    : Colors.red.withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(6),
-                                                border: Border.all(
-                                                  color: branch.isActive ? Colors.teal[400]! : Colors.red[400]!,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                branch.isActive ? 'Đang hoạt động' : 'Dừng hoạt động',
-                                                style: TextStyle(
-                                                  color: branch.isActive ? Colors.teal[300] : Colors.red[300],
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Icon(Icons.location_on, size: 16, color: theme.hintColor),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      branch.address,
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
+                                                  // Name + Status badge
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          branch.branchName,
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 16,
+                                                            color: Colors.white,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                        decoration: BoxDecoration(
+                                                          color: branch.isActive
+                                                              ? Colors.teal.withOpacity(0.15)
+                                                              : Colors.red.withOpacity(0.15),
+                                                          borderRadius: BorderRadius.circular(6),
+                                                          border: Border.all(
+                                                            color: branch.isActive ? Colors.teal[400]! : Colors.red[400]!,
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          branch.isActive ? 'Đang hoạt động' : 'Dừng hoạt động',
+                                                          style: TextStyle(
+                                                            color: branch.isActive ? Colors.teal[300] : Colors.red[300],
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
+                                                  const SizedBox(height: 8),
+                                                  Row(children: [
+                                                    Icon(Icons.location_on, size: 16, color: theme.hintColor),
+                                                    const SizedBox(width: 6),
+                                                    Flexible(child: Text(branch.address, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                  ]),
+                                                  if (branch.phoneNumber != null && branch.phoneNumber!.isNotEmpty) ...[
+                                                    const SizedBox(height: 4),
+                                                    Row(children: [
+                                                      Icon(Icons.phone, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text(branch.phoneNumber!, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                  ],
+                                                  if (branch.email != null && branch.email!.isNotEmpty) ...[
+                                                    const SizedBox(height: 4),
+                                                    Row(children: [
+                                                      Icon(Icons.email, size: 16, color: theme.hintColor),
+                                                      const SizedBox(width: 6),
+                                                      Flexible(child: Text(branch.email!, style: TextStyle(color: theme.hintColor), overflow: TextOverflow.ellipsis)),
+                                                    ]),
+                                                  ],
                                                 ],
                                               ),
-                                              if (branch.phoneNumber != null && branch.phoneNumber!.isNotEmpty) ...[
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.phone, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      branch.phoneNumber!,
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                              if (branch.email != null && branch.email!.isNotEmpty) ...[
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    Icon(Icons.email, size: 16, color: theme.hintColor),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      branch.email!,
-                                                      style: TextStyle(color: theme.hintColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, color: Colors.blue),
-                                              onPressed: () => context
-                                                  .push('/operations/branches/edit/${branch.branchID}')
-                                                  .then((_) => _fetchBranches()),
                                             ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, color: Colors.red),
-                                              onPressed: () => _deleteBranch(branch),
+                                            // Action buttons
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.edit, color: Colors.blue),
+                                                  onPressed: () => context
+                                                      .push('/operations/branches/edit/${branch.branchID}')
+                                                      .then((_) => _fetchBranches()),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                                  onPressed: () => _deleteBranch(branch),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),

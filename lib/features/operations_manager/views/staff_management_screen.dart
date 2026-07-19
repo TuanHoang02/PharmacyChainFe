@@ -14,6 +14,47 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
   final StaffService _staffService = StaffService();
   final BranchService _branchService = BranchService();
 
+  Widget _buildRoleBadge(String roleName) {
+    Color badgeColor;
+    Color textColor;
+    String displayRole = roleName;
+    
+    final roleLower = roleName.toLowerCase();
+    if (roleLower.contains('pharmacist') || roleLower.contains('dược sĩ')) {
+      badgeColor = Colors.teal.withOpacity(0.15);
+      textColor = Colors.teal[300]!;
+      displayRole = 'Dược sĩ';
+    } else if (roleLower.contains('branchmanager') || roleLower.contains('quản lý')) {
+      badgeColor = Colors.orange.withOpacity(0.15);
+      textColor = Colors.orange[300]!;
+      displayRole = 'Quản lý';
+    } else if (roleLower.contains('operationsmanager') || roleLower.contains('vận hành')) {
+      badgeColor = Colors.purple.withOpacity(0.15);
+      textColor = Colors.purple[300]!;
+      displayRole = 'Vận hành';
+    } else {
+      badgeColor = Colors.blue.withOpacity(0.15);
+      textColor = Colors.blue[300]!;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        displayRole,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+
   bool _isLoading = false;
   String _searchTerm = '';
   int? _selectedBranchId;
@@ -185,23 +226,26 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Quản lý nhân sự chuỗi',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Quản lý nhân sự chuỗi',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Quản lý tài khoản quản trị chi nhánh và dược sĩ toàn hệ thống',
-                              style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Quản lý tài khoản quản trị chi nhánh và dược sĩ toàn hệ thống',
+                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
@@ -315,8 +359,8 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                                         isExpanded: true,
                                         items: const [
                                           DropdownMenuItem(value: null, child: Text('Tất cả vai trò')),
-                                          DropdownMenuItem(value: 3, child: Text('Pharmacist (Dược sĩ)')),
-                                          DropdownMenuItem(value: 4, child: Text('BranchManager (Quản lý)')),
+                                          DropdownMenuItem(value: 4, child: Text('Pharmacist (Dược sĩ)')),
+                                          DropdownMenuItem(value: 3, child: Text('BranchManager (Quản lý)')),
                                         ],
                                         onChanged: (val) {
                                           setState(() {
@@ -422,109 +466,125 @@ class _StaffManagementScreenState extends State<StaffManagementScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       color: theme.cardColor,
-                                      child: ListTile(
-                                        contentPadding: const EdgeInsets.all(16),
-                                        leading: CircleAvatar(
-                                          backgroundColor: staff.roleID == 4
-                                              ? Colors.orange.withOpacity(0.2)
-                                              : Colors.teal.withOpacity(0.2),
-                                          child: Icon(
-                                            staff.roleID == 4 ? Icons.manage_accounts : Icons.health_and_safety,
-                                            color: staff.roleID == 4 ? Colors.orange[300] : Colors.teal[300],
-                                          ),
-                                        ),
-                                        title: Row(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
+                                            // Leading avatar
+                                            CircleAvatar(
+                                              backgroundColor: staff.roleID == 4
+                                                  ? Colors.orange.withOpacity(0.2)
+                                                  : Colors.teal.withOpacity(0.2),
+                                              child: Icon(
+                                                staff.roleID == 4 ? Icons.manage_accounts : Icons.health_and_safety,
+                                                color: staff.roleID == 4 ? Colors.orange[300] : Colors.teal[300],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            // Content
                                             Expanded(
-                                              child: Text(
-                                                staff.fullName,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: staff.isActive
-                                                    ? Colors.teal.withOpacity(0.15)
-                                                    : Colors.red.withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(4),
-                                                border: Border.all(
-                                                  color: staff.isActive ? Colors.teal[400]! : Colors.red[400]!,
-                                                ),
-                                              ),
-                                              child: Text(
-                                                staff.isActive ? 'Hoạt động' : 'Tạm khóa',
-                                                style: TextStyle(
-                                                  color: staff.isActive ? Colors.teal[300] : Colors.red[300],
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        subtitle: Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Icon(Icons.security, size: 14, color: theme.hintColor),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    'Quyền: ${staff.roleName}',
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Colors.white,
-                                                    ),
+                                                  // Name + Status badge
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          staff.fullName,
+                                                          style: const TextStyle(
+                                                            fontWeight: FontWeight.bold,
+                                                            fontSize: 16,
+                                                            color: Colors.white,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                          color: staff.isActive
+                                                              ? Colors.teal.withOpacity(0.15)
+                                                              : Colors.red.withOpacity(0.15),
+                                                          borderRadius: BorderRadius.circular(4),
+                                                          border: Border.all(
+                                                            color: staff.isActive ? Colors.teal[400]! : Colors.red[400]!,
+                                                          ),
+                                                        ),
+                                                        child: Text(
+                                                          staff.isActive ? 'Hoạt động' : 'Tạm khóa',
+                                                          style: TextStyle(
+                                                            color: staff.isActive ? Colors.teal[300] : Colors.red[300],
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  const SizedBox(width: 12),
-                                                  Icon(Icons.storefront, size: 14, color: theme.hintColor),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    'Chi nhánh: ${staff.branchName ?? "Toàn chuỗi"}',
-                                                    style: TextStyle(color: theme.hintColor),
+                                                  const SizedBox(height: 6),
+                                                  // Role badge & Branch name
+                                                  Row(
+                                                    children: [
+                                                      _buildRoleBadge(staff.roleName),
+                                                      const SizedBox(width: 8),
+                                                      const Icon(Icons.storefront, size: 14, color: Color(0xFF8FA8C9)),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          staff.branchName ?? 'Toàn chuỗi',
+                                                          style: TextStyle(color: theme.hintColor, fontSize: 13),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  // Phone & Email
+                                                  Row(
+                                                    children: [
+                                                      if (staff.phoneNumber != null && staff.phoneNumber!.isNotEmpty) ...[
+                                                        const Icon(Icons.phone, size: 14, color: Color(0xFF8FA8C9)),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          staff.phoneNumber!,
+                                                          style: TextStyle(color: theme.hintColor, fontSize: 13),
+                                                        ),
+                                                        const SizedBox(width: 12),
+                                                      ],
+                                                      if (staff.email != null && staff.email!.isNotEmpty) ...[
+                                                        const Icon(Icons.email, size: 14, color: Color(0xFF8FA8C9)),
+                                                        const SizedBox(width: 4),
+                                                        Expanded(
+                                                          child: Text(
+                                                            staff.email!,
+                                                            style: TextStyle(color: theme.hintColor, fontSize: 13),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ],
                                                   ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.phone, size: 14, color: theme.hintColor),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    staff.phoneNumber ?? 'Chưa có SĐT',
-                                                    style: TextStyle(color: theme.hintColor),
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Icon(Icons.email, size: 14, color: theme.hintColor),
-                                                  const SizedBox(width: 6),
-                                                  Text(
-                                                    staff.email ?? 'Chưa có email',
-                                                    style: TextStyle(color: theme.hintColor),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, color: Colors.blue),
-                                              onPressed: () => context
-                                                  .push('/operations/staff/edit/${staff.userID}')
-                                                  .then((_) => _fetchStaff()),
                                             ),
-                                            IconButton(
-                                              icon: const Icon(Icons.lock_outline, color: Colors.red),
-                                              onPressed: () => _deleteStaff(staff),
+                                            // Action buttons
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.edit, color: Colors.blue),
+                                                  onPressed: () => context
+                                                      .push('/operations/staff/edit/${staff.userID}')
+                                                      .then((_) => _fetchStaff()),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.lock_outline, color: Colors.red),
+                                                  onPressed: () => _deleteStaff(staff),
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         ),
