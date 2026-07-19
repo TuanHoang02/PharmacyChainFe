@@ -22,6 +22,15 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
   bool _isReviewing = false;
   String? _errorMessage;
   final Map<int, int?> _selectedSuppliers = {}; // detailId -> supplierId
+  final Map<int, TextEditingController> _unitPriceControllers = {};
+
+  @override
+  void dispose() {
+    for (var controller in _unitPriceControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -45,6 +54,7 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
         
         for (var detail in request.details) {
           _selectedSuppliers[detail.purchaseRequestDetailId] = null;
+          _unitPriceControllers[detail.purchaseRequestDetailId] = TextEditingController();
         }
       });
     } catch (e) {
@@ -221,7 +231,7 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                       ),
-                      if (request.status == 'Pending')
+                      if (request.status == 'Pending') ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           child: DropdownButtonFormField<int>(
@@ -242,6 +252,20 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                             },
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: TextFormField(
+                            controller: _unitPriceControllers[detail.purchaseRequestDetailId],
+                            decoration: const InputDecoration(
+                              labelText: 'Đơn giá nhập (*)',
+                              hintText: 'Ví dụ: 150000',
+                              suffixText: 'VNĐ',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -326,9 +350,18 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                     : () async {
                         // Validate suppliers
                         final missingSuppliers = _selectedSuppliers.values.any((s) => s == null);
-                        if (missingSuppliers) {
+                        bool missingPrices = false;
+                        for (var entry in _unitPriceControllers.entries) {
+                          final text = entry.value.text.trim();
+                          if (text.isEmpty || double.tryParse(text) == null) {
+                            missingPrices = true;
+                            break;
+                          }
+                        }
+
+                        if (missingSuppliers || missingPrices) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Vui lòng chọn nhà cung cấp cho tất cả các loại thuốc để duyệt.')),
+                            const SnackBar(content: Text('Vui lòng chọn nhà cung cấp và nhập đơn giá hợp lệ cho tất cả các loại thuốc để duyệt.')),
                           );
                           return;
                         }
@@ -337,6 +370,7 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                             .map((e) => {
                                   'purchaseRequestDetailID': e.key,
                                   'supplierID': e.value,
+                                  'unitPrice': double.parse(_unitPriceControllers[e.key]!.text.trim()),
                                 })
                             .toList();
 
