@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/models/purchase_request_model.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/purchase_service.dart';
@@ -17,22 +18,43 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Pagination state
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _pageSize = 10;
+  int _totalRecords = 0;
+  bool _hasPrevious = false;
+  bool _hasNext = false;
+
   @override
   void initState() {
     super.initState();
     _fetchRequests();
   }
 
-  Future<void> _fetchRequests() async {
+  Future<void> _fetchRequests({bool resetPage = false}) async {
+    if (resetPage) {
+      _currentPage = 1;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final requests = await _purchaseService.getPurchaseRequests();
+      final pagedResponse = await _purchaseService.getPurchaseRequests(
+        pageNumber: _currentPage,
+        pageSize: _pageSize,
+      );
       setState(() {
-        _requests = requests;
+        _requests = pagedResponse.data;
+        _currentPage = pagedResponse.pageNumber;
+        _pageSize = pagedResponse.pageSize;
+        _totalRecords = pagedResponse.totalRecords;
+        _totalPages = pagedResponse.totalPages;
+        _hasPrevious = pagedResponse.hasPrevious;
+        _hasNext = pagedResponse.hasNext;
         _isLoading = false;
       });
     } catch (e) {
@@ -86,11 +108,16 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchRequests,
+            onPressed: () => _fetchRequests(resetPage: true),
           ),
         ],
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          Expanded(child: _buildBody()),
+          if (_requests.isNotEmpty) _buildPaginationControls(),
+        ],
+      ),
     );
   }
 
@@ -220,6 +247,11 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   ),
                                   child: const Text('Nhận hàng', style: TextStyle(fontSize: 12)),
+                                )
+                              else if (po.deliveryStatus == 'Received')
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  child: Text('Đã nhận', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                                 ),
                             ],
                           ),
@@ -234,6 +266,74 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: const Color(0xFF111F38),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Previous button
+          ElevatedButton(
+            onPressed: _hasPrevious && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                    _fetchRequests();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.chevron_left, size: 18),
+                Text('Trước', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+          
+          // Page Indicator
+          Text(
+            'Trang $_currentPage / ${math.max(1, _totalPages)}\n(Tổng: $_totalRecords)',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+          ),
+          
+          // Next button
+          ElevatedButton(
+            onPressed: _hasNext && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                    _fetchRequests();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Text('Sau', style: TextStyle(fontSize: 12)),
+                Icon(Icons.chevron_right, size: 18),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

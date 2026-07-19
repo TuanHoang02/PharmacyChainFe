@@ -86,12 +86,14 @@ class PurchaseOrderSummaryDetailModel {
   final String medicineName;
   final int orderedQuantity;
   final int receivedQuantity;
+  final List<PreDeclaredBatchModel> batches;
 
   PurchaseOrderSummaryDetailModel({
     required this.medicineId,
     required this.medicineName,
     required this.orderedQuantity,
     required this.receivedQuantity,
+    required this.batches,
   });
 
   factory PurchaseOrderSummaryDetailModel.fromJson(Map<String, dynamic> json) {
@@ -100,6 +102,37 @@ class PurchaseOrderSummaryDetailModel {
       medicineName: json['medicineName'],
       orderedQuantity: json['orderedQuantity'],
       receivedQuantity: json['receivedQuantity'],
+      batches: json['batches'] != null
+          ? (json['batches'] as List)
+              .map((item) => PreDeclaredBatchModel.fromJson(item))
+              .toList()
+          : [],
+    );
+  }
+}
+
+class PreDeclaredBatchModel {
+  final int medicineBatchId;
+  final String batchNumber;
+  final int declaredQuantity;
+  final DateTime manufacturingDate;
+  final DateTime expirationDate;
+
+  PreDeclaredBatchModel({
+    required this.medicineBatchId,
+    required this.batchNumber,
+    required this.declaredQuantity,
+    required this.manufacturingDate,
+    required this.expirationDate,
+  });
+
+  factory PreDeclaredBatchModel.fromJson(Map<String, dynamic> json) {
+    return PreDeclaredBatchModel(
+      medicineBatchId: json['medicineBatchId'],
+      batchNumber: json['batchNumber'],
+      declaredQuantity: json['declaredQuantity'],
+      manufacturingDate: DateTime.parse(json['manufacturingDate']),
+      expirationDate: DateTime.parse(json['expirationDate']),
     );
   }
 }

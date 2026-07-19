@@ -16,18 +16,18 @@ class _ReceivePODialogState extends State<ReceivePODialog> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  // Key: medicineBatchId, Value: TextEditingController
   final Map<int, TextEditingController> _qtyControllers = {};
-  final Map<int, TextEditingController> _batchControllers = {};
-  final Map<int, DateTime?> _mfgDates = {};
-  final Map<int, DateTime?> _expDates = {};
 
   @override
   void initState() {
     super.initState();
     for (var detail in widget.po.details) {
       if (detail.receivedQuantity < detail.orderedQuantity) {
-        _qtyControllers[detail.medicineId] = TextEditingController(text: (detail.orderedQuantity - detail.receivedQuantity).toString());
-        _batchControllers[detail.medicineId] = TextEditingController();
+        for (var batch in detail.batches) {
+          // Default to the full declared quantity
+          _qtyControllers[batch.medicineBatchId] = TextEditingController(text: batch.declaredQuantity.toString());
+        }
       }
     }
   }
@@ -37,65 +37,48 @@ class _ReceivePODialogState extends State<ReceivePODialog> {
     for (var controller in _qtyControllers.values) {
       controller.dispose();
     }
-    for (var controller in _batchControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context, int medicineId, bool isMfg) async {
-    final initialDate = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isMfg) {
-          _mfgDates[medicineId] = picked;
-        } else {
-          _expDates[medicineId] = picked;
-        }
-      });
-    }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Check dates
-    for (var detail in widget.po.details) {
-      if (detail.receivedQuantity < detail.orderedQuantity) {
-        if (_mfgDates[detail.medicineId] == null || _expDates[detail.medicineId] == null) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn đầy đủ NSX và HSD cho tất cả thuốc.')));
-          return;
-        }
-        if (_mfgDates[detail.medicineId]!.isAfter(_expDates[detail.medicineId]!)) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('NSX không được sau HSD đối với thuốc ${detail.medicineName}.')));
-          return;
-        }
-      }
-    }
-
     setState(() => _isLoading = true);
 
     try {
       final List<Map<String, dynamic>> detailsData = [];
+      
       for (var detail in widget.po.details) {
         if (detail.receivedQuantity < detail.orderedQuantity) {
-          detailsData.add({
-            'medicineId': detail.medicineId,
-            'receivedQuantity': int.parse(_qtyControllers[detail.medicineId]!.text),
-            'batchNumber': _batchControllers[detail.medicineId]!.text,
-            'manufacturingDate': _mfgDates[detail.medicineId]!.toIso8601String(),
-            'expirationDate': _expDates[detail.medicineId]!.toIso8601String(),
-          });
+          final List<Map<String, dynamic>> batchesData = [];
+          for (var batch in detail.batches) {
+            final qtyText = _qtyControllers[batch.medicineBatchId]?.text;
+            if (qtyText != null && qtyText.isNotEmpty) {
+              final qty = int.tryParse(qtyText) ?? 0;
+              if (qty > 0) {
+                batchesData.add({
+                  'medicineBatchId': batch.medicineBatchId,
+                  'receivedQuantity': qty,
+                });
+              }
+            }
+          }
+          if (batchesData.isNotEmpty) {
+            detailsData.add({
+              'medicineId': detail.medicineId,
+              'receivedBatches': batchesData,
+            });
+          }
         }
       }
 
-      await PurchaseService().receivePurchaseOrder(widget.po.purchaseOrderId, {'details': detailsData});
+      if (detailsData.isEmpty) {
+        throw Exception("Vui lòng nhập số lượng cho ít nhất một lô hàng.");
+      }
+
+      await PurchaseService().receivePurchaseOrder(widget.po.purchaseOrderId, {
+        'details': detailsData
+      });
       
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -136,59 +119,48 @@ class _ReceivePODialogState extends State<ReceivePODialog> {
                     children: [
                       Text(detail.medicineName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       const SizedBox(height: 8),
-                      Text('SL chưa nhận: ${detail.orderedQuantity - detail.receivedQuantity}', style: const TextStyle(color: Colors.grey)),
+                      Text('SL đặt: ${detail.orderedQuantity} - Đã nhận: ${detail.receivedQuantity}', style: const TextStyle(color: Colors.grey)),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _qtyControllers[detail.medicineId],
-                              decoration: const InputDecoration(labelText: 'SL nhận', border: OutlineInputBorder()),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Bắt buộc';
-                                final val = int.tryParse(value);
-                                if (val == null || val <= 0) return 'Không hợp lệ';
-                                if (val > (detail.orderedQuantity - detail.receivedQuantity)) return 'Quá SL';
-                                return null;
-                              },
+                      if (detail.batches.isEmpty)
+                        const Text('Nhà cung cấp chưa khai báo lô thuốc nào.', style: TextStyle(color: Colors.red, fontStyle: FontStyle.italic))
+                      else
+                        ...detail.batches.map((batch) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Lô: ${batch.batchNumber}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      Text('SL khai báo: ${batch.declaredQuantity}'),
+                                      Text('NSX: ${DateFormat('dd/MM/yyyy').format(batch.manufacturingDate)} - HSD: ${DateFormat('dd/MM/yyyy').format(batch.expirationDate)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  flex: 1,
+                                  child: TextFormField(
+                                    controller: _qtyControllers[batch.medicineBatchId],
+                                    decoration: const InputDecoration(labelText: 'SL nhận', border: OutlineInputBorder(), isDense: true),
+                                    keyboardType: TextInputType.number,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) return 'Bắt buộc';
+                                      final val = int.tryParse(value);
+                                      if (val == null || val < 0) return 'Lỗi';
+                                      if (val > batch.declaredQuantity) return 'Vượt SL khai báo';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _batchControllers[detail.medicineId],
-                              decoration: const InputDecoration(labelText: 'Mã lô', border: OutlineInputBorder()),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return 'Bắt buộc';
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => _selectDate(context, detail.medicineId, true),
-                              child: Text(_mfgDates[detail.medicineId] == null 
-                                  ? 'Chọn NSX' 
-                                  : DateFormat('dd/MM/yyyy').format(_mfgDates[detail.medicineId]!)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => _selectDate(context, detail.medicineId, false),
-                              child: Text(_expDates[detail.medicineId] == null 
-                                  ? 'Chọn HSD' 
-                                  : DateFormat('dd/MM/yyyy').format(_expDates[detail.medicineId]!)),
-                            ),
-                          ),
-                        ],
-                      ),
+                          );
+                        }).toList(),
                     ],
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/models/inventory_item.dart';
@@ -20,6 +21,14 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Pagination state
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _pageSize = 10;
+  int _totalRecords = 0;
+  bool _hasPrevious = false;
+  bool _hasNext = false;
+
   @override
   void initState() {
     super.initState();
@@ -36,20 +45,34 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      _fetchInventory(searchKeyword: query);
+      _fetchInventory(searchKeyword: query, resetPage: true);
     });
   }
 
-  Future<void> _fetchInventory({String searchKeyword = ''}) async {
+  Future<void> _fetchInventory({String searchKeyword = '', bool resetPage = false}) async {
+    if (resetPage) {
+      _currentPage = 1;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final items = await _inventoryService.getInventories(searchKeyword: searchKeyword);
+      final pagedResponse = await _inventoryService.getInventories(
+        searchKeyword: searchKeyword.isEmpty ? _searchController.text : searchKeyword,
+        pageNumber: _currentPage,
+        pageSize: _pageSize,
+      );
       setState(() {
-        _items = items;
+        _items = pagedResponse.data;
+        _currentPage = pagedResponse.pageNumber;
+        _pageSize = pagedResponse.pageSize;
+        _totalRecords = pagedResponse.totalRecords;
+        _totalPages = pagedResponse.totalPages;
+        _hasPrevious = pagedResponse.hasPrevious;
+        _hasNext = pagedResponse.hasNext;
         _isLoading = false;
       });
     } catch (e) {
@@ -75,6 +98,7 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           Expanded(
             child: _buildBody(),
           ),
+          if (_items.isNotEmpty) _buildPaginationControls(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -85,6 +109,12 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
         icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
         label: const Text('Tạo Yêu Cầu Nhập Hàng', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
+      floatingActionButtonLocation: _items.isNotEmpty
+          ? const _OffsetFloatingActionButtonLocation(
+              FloatingActionButtonLocation.endFloat,
+              offsetY: -60,
+            )
+          : FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -243,5 +273,91 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildPaginationControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: const Color(0xFF111F38),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Previous button
+          ElevatedButton(
+            onPressed: _hasPrevious && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                    _fetchInventory();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.chevron_left, size: 18),
+                Text('Trước', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+          
+          // Page Indicator
+          Text(
+            'Trang $_currentPage / ${math.max(1, _totalPages)}\n(Tổng: $_totalRecords)',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+          ),
+          
+          // Next button
+          ElevatedButton(
+            onPressed: _hasNext && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                    _fetchInventory();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Text('Sau', style: TextStyle(fontSize: 12)),
+                Icon(Icons.chevron_right, size: 18),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OffsetFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  final FloatingActionButtonLocation location;
+  final double offsetX;
+  final double offsetY;
+
+  const _OffsetFloatingActionButtonLocation(
+    this.location, {
+    this.offsetX = 0,
+    this.offsetY = 0,
+  });
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx + offsetX, offset.dy + offsetY);
   }
 }
