@@ -7,7 +7,7 @@ class ApiConstants {
   static const String logout = '/api/Auth/logout';
   static const String changePassword = '/api/Auth/change-password';
   static const String medicines = '/api/Medicines';
-  static const String categories = '/api/Categories';
+  static const String categories = '/api/Category';
   static const String sales = '/api/Sales';
   static const String purchaseOrders = '/api/PurchaseOrders';
   static const String branchDashboard = '/api/BranchDashboard';
