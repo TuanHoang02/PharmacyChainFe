@@ -57,9 +57,9 @@ class PurchaseService {
     }
   }
 
-  Future<void> receiveMedicines(int purchaseRequestId) async {
+  Future<void> receivePurchaseOrder(int purchaseOrderId, Map<String, dynamic> data) async {
     final token = await _storageService.getToken();
-    final url = Uri.parse('${ApiConstants.baseUrl}/api/purchase/$purchaseRequestId/receive');
+    final url = Uri.parse('${ApiConstants.baseUrl}/api/purchase/order/$purchaseOrderId/receive');
 
     final response = await http.post(
       url,
@@ -67,6 +67,7 @@ class PurchaseService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
+      body: jsonEncode(data),
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {

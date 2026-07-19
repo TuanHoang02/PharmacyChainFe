@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/models/purchase_request_model.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/purchase_service.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/widgets/receive_po_dialog.dart';
 
 class PurchaseRequestsScreen extends StatefulWidget {
   const PurchaseRequestsScreen({super.key});
@@ -57,44 +58,21 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
     }
   }
 
-  void _showReceiveDialog(PurchaseRequestModel request) {
-    showDialog(
+  void _showReceiveDialog(PurchaseRequestModel request, PurchaseOrderSummaryModel po) async {
+    final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Nhận hàng - ${request.requestCode}'),
-        content: const Text('Bạn có chắc chắn muốn xác nhận nhận đủ số lượng lô hàng này không?\n\n(Hệ thống sẽ lấy dữ liệu lô thuốc đã được khai báo từ trước để cập nhật vào kho).'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(context); // Đóng dialog
-              setState(() => _isLoading = true);
-              try {
-                await _purchaseService.receiveMedicines(request.purchaseRequestId);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Nhận hàng thành công! Tồn kho đã được cập nhật.')),
-                  );
-                }
-                _fetchRequests(); // Tải lại danh sách
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
-                  );
-                }
-                setState(() => _isLoading = false);
-              }
-            },
-            child: const Text('Đồng ý Nhận'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (context) => ReceivePODialog(po: po),
     );
+
+    if (result == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nhận hàng thành công! Tồn kho đã được cập nhật.')),
+        );
+      }
+      _fetchRequests();
+    }
   }
 
   @override
@@ -208,20 +186,45 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
                         ],
                       ),
                     )),
-                    if (request.status.toLowerCase() == 'approved') ...[
+                    if (request.purchaseOrders.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showReceiveDialog(request),
-                          icon: const Icon(Icons.download),
-                          label: const Text('NHẬN HÀNG'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
+                      const Text('Đơn đặt hàng (Từ NCC):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 8),
+                      ...request.purchaseOrders.map((po) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2A3F5F),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                      ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(po.supplierName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                                    Text('Mã PO: ${po.orderCode}', style: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 12)),
+                                    Text('Trạng thái: ${po.deliveryStatus}', style: TextStyle(color: po.deliveryStatus == 'Received' ? Colors.green : Colors.orange, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                              if (po.deliveryStatus == 'Pending' || po.deliveryStatus == 'Confirmed' || po.deliveryStatus == 'Delivered')
+                                ElevatedButton(
+                                  onPressed: () => _showReceiveDialog(request, po),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  child: const Text('Nhận hàng', style: TextStyle(fontSize: 12)),
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
                     ],
                   ],
                 ),
