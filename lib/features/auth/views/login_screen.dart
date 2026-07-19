@@ -121,7 +121,9 @@ class _LoginScreenState extends State<LoginScreen>
           children: [
             const Icon(Icons.check_circle_rounded, color: Colors.white),
             const SizedBox(width: 8),
-            Text('Đăng nhập thành công! Vai trò: $role'),
+            Expanded(
+              child: Text('Đang nhập thành công! Vai trò: $role'),
+            ),
           ],
         ),
         backgroundColor: const Color(0xFF00C48C),

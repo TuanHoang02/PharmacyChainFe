@@ -504,7 +504,7 @@ class _UserFormDialogState extends State<_UserFormDialog> {
       title: Text(isEditing ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'),
       content: SingleChildScrollView(
         child: SizedBox(
-          width: 400,
+          width: MediaQuery.of(context).size.width > 450 ? 400 : MediaQuery.of(context).size.width * 0.85,
           child: Form(
             key: _formKey,
             child: Column(

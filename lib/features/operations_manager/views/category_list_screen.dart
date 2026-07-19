@@ -311,23 +311,26 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Danh mục thuốc',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Danh mục thuốc',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Quản lý nhóm phân loại thuốc trong hệ thống',
-                              style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                'Quản lý nhóm phân loại thuốc trong hệ thống',
+                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
