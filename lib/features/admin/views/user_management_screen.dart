@@ -390,42 +390,92 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           // Pagination Controls
           if (!_isLoading && _users.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: _currentPage > 1 ? () {
-                      setState(() => _currentPage--);
-                      _fetchUsers();
-                    } : null,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '$_currentPage',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('... $_totalPages'),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: _currentPage < _totalPages ? () {
-                      setState(() => _currentPage++);
-                      _fetchUsers();
-                    } : null,
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+              child: _buildPaginationRow(),
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPaginationRow() {
+    List<Widget> pageButtons = [];
+    
+    pageButtons.add(
+      IconButton(
+        icon: const Icon(Icons.chevron_left),
+        onPressed: _currentPage > 1 ? () {
+          setState(() => _currentPage--);
+          _fetchUsers();
+        } : null,
+      ),
+    );
+
+    List<int> pages = [];
+    if (_totalPages <= 5) {
+      for (int i = 1; i <= _totalPages; i++) {
+        pages.add(i);
+      }
+    } else {
+      if (_currentPage <= 3) {
+        pages.addAll([1, 2, 3, -1, _totalPages]); 
+      } else if (_currentPage >= _totalPages - 2) {
+        pages.addAll([1, -1, _totalPages - 2, _totalPages - 1, _totalPages]);
+      } else {
+        pages.addAll([1, -1, _currentPage - 1, _currentPage, _currentPage + 1, -1, _totalPages]);
+      }
+    }
+
+    for (var page in pages) {
+      if (page == -1) {
+        pageButtons.add(const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.0),
+          child: Text('...', style: TextStyle(fontWeight: FontWeight.bold)),
+        ));
+      } else {
+        bool isActive = page == _currentPage;
+        pageButtons.add(
+          InkWell(
+            onTap: isActive ? null : () {
+              setState(() => _currentPage = page);
+              _fetchUsers();
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isActive ? Colors.black : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: isActive ? null : Border.all(color: Colors.grey.withAlpha(50)),
+              ),
+              child: Text(
+                '$page',
+                style: TextStyle(
+                  color: isActive ? Colors.white : Colors.white70,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          )
+        );
+      }
+    }
+
+    pageButtons.add(
+      IconButton(
+        icon: const Icon(Icons.chevron_right),
+        onPressed: _currentPage < _totalPages ? () {
+          setState(() => _currentPage++);
+          _fetchUsers();
+        } : null,
+      ),
+    );
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: pageButtons,
     );
   }
 }
