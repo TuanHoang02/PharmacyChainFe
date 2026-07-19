@@ -39,16 +39,43 @@ class AdminMainLayout extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Pharmacy Chain'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await AuthService().logout();
-              await LocalStorageService().clearAll();
-              if (context.mounted) {
-                context.go('/login');
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle, size: 28),
+            onSelected: (value) async {
+              if (value == 'change_password') {
+                context.push('/change-password');
+              } else if (value == 'logout') {
+                await AuthService().logout();
+                await LocalStorageService().clearAll();
+                if (context.mounted) {
+                  context.go('/login');
+                }
               }
             },
-          )
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'change_password',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_reset, size: 20),
+                    SizedBox(width: 8),
+                    Text('Đổi mật khẩu'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, size: 20),
+                    SizedBox(width: 8),
+                    Text('Đăng xuất'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: child,
