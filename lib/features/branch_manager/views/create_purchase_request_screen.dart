@@ -43,9 +43,9 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
 
   Future<void> _fetchMedicines() async {
     try {
-      final items = await _inventoryService.getInventories();
+      final items = await _inventoryService.getInventories(pageSize: 1000);
       setState(() {
-        _medicines = items;
+        _medicines = items.data;
         _isLoadingMedicines = false;
       });
     } catch (e) {

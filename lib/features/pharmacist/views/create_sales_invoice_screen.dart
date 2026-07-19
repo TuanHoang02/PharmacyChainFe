@@ -26,6 +26,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
   final SalesService _salesService = SalesService();
 
   List<_CartItem> _cart = [];
+  List<InventoryItem> _availableMedicines = [];
   bool _isSubmitting = false;
   int _selectedPaymentMethod = 0; // 0: Cash, 2: BankTransfer
   String? _prescriptionFileName;
@@ -42,19 +43,26 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
   final Color _primaryColor = const Color(0xFF00C48C);
   final Color _borderColor = const Color(0xFF2A3F5F);
 
-  void _showAddMedicineBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: _panelColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (context) => const _AddMedicineSheet(),
-    ).then((selectedItem) {
-      if (selectedItem != null && selectedItem is InventoryItem) {
-        _addToCart(selectedItem);
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadMedicines();
   }
+
+  Future<void> _loadMedicines() async {
+    try {
+      final items = await _inventoryService.getInventories(pageSize: 1000);
+      if (mounted) {
+        setState(() {
+          _availableMedicines = items.data;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading medicines: $e');
+    }
+  }
+
+  // Removed _showAddMedicineBottomSheet as we use Dropdown now
 
   void _addToCart(InventoryItem item) {
     if (item.quantityInStock <= 0) {
@@ -159,7 +167,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: Text('CREATE SALES INVOICE', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Text('TẠO HÓA ĐƠN BÁN HÀNG', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 16)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(color: _borderColor, height: 1),
@@ -213,9 +221,9 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Welcome back,', style: TextStyle(color: _subtextColor, fontSize: 12)),
+                Text('Xin chào,', style: TextStyle(color: _subtextColor, fontSize: 12)),
                 Text('Pharmacist', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Role: Pharmacist', style: TextStyle(color: _subtextColor, fontSize: 12)),
+                Text('Vai trò: Dược sĩ', style: TextStyle(color: _subtextColor, fontSize: 12)),
               ],
             ),
           ],
@@ -227,7 +235,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
               children: [
                 Icon(Icons.sync, size: 14, color: _subtextColor),
                 const SizedBox(width: 4),
-                Text('Last updated', style: TextStyle(color: _subtextColor, fontSize: 12)),
+                Text('Cập nhật lúc', style: TextStyle(color: _subtextColor, fontSize: 12)),
               ],
             ),
             Text(DateFormat('HH:mm a').format(DateTime.now()), style: TextStyle(color: _textColor, fontWeight: FontWeight.w500, fontSize: 12)),
@@ -241,16 +249,37 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('INVOICE ITEMS', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
-        OutlinedButton.icon(
-          onPressed: _showAddMedicineBottomSheet,
-          icon: Icon(Icons.add, size: 16, color: _textColor),
-          label: Text('Add Medicine', style: TextStyle(color: _textColor)),
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: _borderColor),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            minimumSize: Size.zero,
+        Text('DANH SÁCH THUỐC', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+        Container(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: _borderColor),
+            borderRadius: BorderRadius.circular(8),
+            color: _panelColor,
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<InventoryItem>(
+              hint: Text('Thêm thuốc', style: TextStyle(color: _textColor, fontSize: 13)),
+              dropdownColor: _panelColor,
+              icon: Icon(Icons.keyboard_arrow_down, color: _textColor, size: 16),
+              items: _availableMedicines.map((item) {
+                return DropdownMenuItem<InventoryItem>(
+                  value: item,
+                  child: SizedBox(
+                    width: 200,
+                    child: Text('${item.medicineName} (${item.quantityInStock})', 
+                      style: TextStyle(color: _textColor, fontSize: 13), 
+                      overflow: TextOverflow.ellipsis),
+                  ),
+                );
+              }).toList(),
+              onChanged: (item) {
+                if (item != null) {
+                  _addToCart(item);
+                }
+              },
+            ),
           ),
         ),
       ],
@@ -271,7 +300,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
           children: [
             Icon(Icons.shopping_cart_outlined, size: 48, color: _subtextColor),
             const SizedBox(height: 16),
-            Text('No items added', style: TextStyle(color: _subtextColor)),
+            Text('Chưa có thuốc nào', style: TextStyle(color: _subtextColor)),
           ],
         ),
       );
@@ -290,11 +319,11 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
             padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
-                Expanded(flex: 4, child: Text('Medicine', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Center(child: Text('Qty', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
-                Expanded(flex: 2, child: Center(child: Text('Unit Price', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
-                Expanded(flex: 2, child: Center(child: Text('Discount', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
-                Expanded(flex: 2, child: Align(alignment: Alignment.centerRight, child: Text('Total', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
+                Expanded(flex: 4, child: Text('Tên thuốc', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Center(child: Text('SL', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
+                Expanded(flex: 2, child: Center(child: Text('Đơn giá', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
+                Expanded(flex: 2, child: Center(child: Text('Giảm giá', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
+                Expanded(flex: 2, child: Align(alignment: Alignment.centerRight, child: Text('Tổng', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
               ],
             ),
           ),
@@ -343,12 +372,11 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
                                           border: Border.all(color: _subtextColor),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
-                                        child: Text('Rx Required', style: TextStyle(color: _subtextColor, fontSize: 8, fontWeight: FontWeight.bold)),
+                                        child: Text('Thuốc kê đơn', style: TextStyle(color: _subtextColor, fontSize: 8, fontWeight: FontWeight.bold)),
                                       ),
                                   ],
                                 ),
-                                Text('Tablet', style: TextStyle(color: _subtextColor, fontSize: 11)),
-                                Text('Batch: B230501', style: TextStyle(color: _subtextColor, fontSize: 11)),
+                                Text('Viên', style: TextStyle(color: _subtextColor, fontSize: 11)),
                               ],
                             ),
                           ),
@@ -421,7 +449,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('CUSTOMER INFO', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text('THÔNG TIN KHÁCH HÀNG', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -481,7 +509,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('PRESCRIPTION ATTACHMENT (Rx Required)', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
+        Text('ĐÍNH KÈM ĐƠN THUỐC (Bắt buộc)', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -494,9 +522,9 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildUploadButton(Icons.camera_alt_outlined, 'Capture Photo'),
-              Text('or', style: TextStyle(color: _subtextColor)),
-              _buildUploadButton(Icons.upload_file, 'Upload from Gallery'),
+              _buildUploadButton(Icons.camera_alt_outlined, 'Chụp ảnh'),
+              Text('hoặc', style: TextStyle(color: _subtextColor)),
+              _buildUploadButton(Icons.upload_file, 'Chọn từ thư viện'),
             ],
           ),
         ),
@@ -518,7 +546,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(_prescriptionFileName!, style: TextStyle(color: _textColor, fontWeight: FontWeight.w500, fontSize: 13)),
-                      Text('Added at ${DateFormat('HH:mm a').format(DateTime.now())}', style: TextStyle(color: _subtextColor, fontSize: 11)),
+                      Text('Thêm lúc ${DateFormat('HH:mm a').format(DateTime.now())}', style: TextStyle(color: _subtextColor, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -563,7 +591,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('PAYMENT METHOD', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text('PHƯƠNG THỨC THANH TOÁN', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -620,7 +648,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('INVOICE SUMMARY', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+        Text('TỔNG KẾT ĐƠN HÀNG', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(16),
@@ -631,11 +659,11 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
           ),
           child: Column(
             children: [
-              _buildSummaryRow('Subtotal (${_cart.length} items)', _currencyFormat.format(_subtotal)),
+              _buildSummaryRow('Tạm tính (${_cart.length} thuốc)', _currencyFormat.format(_subtotal)),
               const SizedBox(height: 8),
-              _buildSummaryRow('Discount', '0'),
+              _buildSummaryRow('Giảm giá', '0'),
               const SizedBox(height: 8),
-              _buildSummaryRow('Tax (VAT 5%)', _currencyFormat.format(_tax)),
+              _buildSummaryRow('Thuế (VAT 5%)', _currencyFormat.format(_tax)),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Divider(height: 1, thickness: 1, color: _borderColor),
@@ -643,7 +671,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('TOTAL AMOUNT', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text('TỔNG TIỀN', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
                   Text('${_currencyFormat.format(_total)}đ', style: TextStyle(color: _primaryColor, fontWeight: FontWeight.bold, fontSize: 18)),
                 ],
               ),
@@ -672,7 +700,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
         icon: _isSubmitting ? const SizedBox.shrink() : const Icon(Icons.credit_card, color: Colors.white),
         label: _isSubmitting
             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-            : const Text('PROCESS PAYMENT', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+            : const Text('THANH TOÁN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
         style: ElevatedButton.styleFrom(
           backgroundColor: _primaryColor,
           foregroundColor: Colors.white,
@@ -711,10 +739,10 @@ class _AddMedicineSheetState extends State<_AddMedicineSheet> {
     }
     setState(() => _isSearching = true);
     try {
-      final results = await _inventoryService.getInventories(searchKeyword: query);
-      setState(() => _searchResults = results);
+      final pagedResponse = await _inventoryService.getInventories(searchKeyword: query);
+      setState(() => _searchResults = pagedResponse.data);
     } catch (e) {
-      // Handle error implicitly
+      setState(() => _searchResults = []);
     } finally {
       if (mounted) setState(() => _isSearching = false);
     }
