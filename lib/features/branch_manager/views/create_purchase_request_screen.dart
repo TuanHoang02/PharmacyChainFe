@@ -4,6 +4,7 @@ import 'package:pharmacy_chain_fe/features/branch_manager/models/inventory_item.
 import 'package:pharmacy_chain_fe/features/branch_manager/models/purchase_request_dto.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/inventory_service.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/purchase_service.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class CreatePurchaseRequestScreen extends StatefulWidget {
   const CreatePurchaseRequestScreen({super.key});
@@ -259,10 +260,13 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
         children: [
           Expanded(
             flex: 3,
-            child: DropdownButtonFormField<int>(
+            child: DropdownButtonFormField2<int>(
               isExpanded: true,
               value: row.selectedMedicineId,
-              dropdownColor: const Color(0xFF111F38),
+              dropdownStyleData: const DropdownStyleData(
+                decoration: BoxDecoration(color: Color(0xFF111F38)),
+                maxHeight: 300,
+              ),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Chọn thuốc',
@@ -283,6 +287,36 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
                   ),
                 );
               }).toList(),
+              dropdownSearchData: DropdownSearchData(
+                searchController: row.searchController,
+                searchInnerWidgetHeight: 50,
+                searchInnerWidget: Container(
+                  height: 50,
+                  padding: const EdgeInsets.only(top: 8, bottom: 4, right: 8, left: 8),
+                  child: TextFormField(
+                    controller: row.searchController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      hintText: 'Tìm kiếm thuốc...',
+                      hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+                searchMatchFn: (item, searchValue) {
+                  final med = _medicines.firstWhere((m) => m.medicineId == item.value);
+                  return med.medicineName.toLowerCase().contains(searchValue.toLowerCase());
+                },
+              ),
+              onMenuStateChange: (isOpen) {
+                if (!isOpen) {
+                  row.searchController.clear();
+                }
+              },
               onChanged: (val) {
                 setState(() {
                   row.selectedMedicineId = val;
@@ -330,9 +364,10 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
 class _RequestRow {
   int? selectedMedicineId;
   TextEditingController quantityController;
+  TextEditingController searchController;
 
   _RequestRow({
     this.selectedMedicineId,
     required this.quantityController,
-  });
+  }) : searchController = TextEditingController();
 }

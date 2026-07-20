@@ -4,6 +4,7 @@ import 'package:pharmacy_chain_fe/features/branch_manager/models/inventory_item.
 import 'package:pharmacy_chain_fe/features/branch_manager/services/inventory_service.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/models/create_sales_invoice_dto.dart';
 import 'package:pharmacy_chain_fe/features/pharmacist/services/sales_service.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class CreateSalesInvoiceScreen extends StatefulWidget {
   const CreateSalesInvoiceScreen({super.key});
@@ -33,6 +34,7 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
   final TextEditingController _customerNameController = TextEditingController();
   final TextEditingController _customerPhoneController = TextEditingController();
   final NumberFormat _currencyFormat = NumberFormat('#,##0', 'en_US');
+  final TextEditingController _dropdownSearchController = TextEditingController();
 
   // Dark Theme Colors
   final Color _bgColor = const Color(0xFF0A1628);
@@ -250,35 +252,69 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('DANH SÁCH THUỐC', style: TextStyle(color: _textColor, fontWeight: FontWeight.bold, fontSize: 14)),
-        Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            border: Border.all(color: _borderColor),
-            borderRadius: BorderRadius.circular(8),
-            color: _panelColor,
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<InventoryItem>(
-              hint: Text('Thêm thuốc', style: TextStyle(color: _textColor, fontSize: 13)),
-              dropdownColor: _panelColor,
-              icon: Icon(Icons.keyboard_arrow_down, color: _textColor, size: 16),
-              items: _availableMedicines.map((item) {
-                return DropdownMenuItem<InventoryItem>(
-                  value: item,
-                  child: SizedBox(
-                    width: 200,
+        Expanded(
+          child: Container(
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: _borderColor),
+              borderRadius: BorderRadius.circular(8),
+              color: _panelColor,
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton2<InventoryItem>(
+                isExpanded: true,
+                hint: Text('Thêm thuốc', style: TextStyle(color: _textColor, fontSize: 13)),
+                dropdownStyleData: DropdownStyleData(
+                  decoration: BoxDecoration(color: _panelColor),
+                  maxHeight: 300,
+                ),
+                iconStyleData: IconStyleData(
+                  icon: Icon(Icons.keyboard_arrow_down, color: _textColor, size: 16),
+                ),
+                items: _availableMedicines.map((item) {
+                  return DropdownMenuItem<InventoryItem>(
+                    value: item,
                     child: Text('${item.medicineName} (${item.quantityInStock})', 
                       style: TextStyle(color: _textColor, fontSize: 13), 
                       overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                dropdownSearchData: DropdownSearchData(
+                  searchController: _dropdownSearchController,
+                  searchInnerWidgetHeight: 50,
+                  searchInnerWidget: Container(
+                    height: 50,
+                    padding: const EdgeInsets.only(top: 8, bottom: 4, right: 8, left: 8),
+                    child: TextFormField(
+                      controller: _dropdownSearchController,
+                      style: TextStyle(color: _textColor, fontSize: 13),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        hintText: 'Tìm kiếm thuốc...',
+                        hintStyle: TextStyle(color: _subtextColor, fontSize: 13),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
                   ),
-                );
-              }).toList(),
-              onChanged: (item) {
-                if (item != null) {
-                  _addToCart(item);
-                }
-              },
+                  searchMatchFn: (item, searchValue) {
+                    return item.value!.medicineName.toLowerCase().contains(searchValue.toLowerCase());
+                  },
+                ),
+                onMenuStateChange: (isOpen) {
+                  if (!isOpen) {
+                    _dropdownSearchController.clear();
+                  }
+                },
+                onChanged: (item) {
+                  if (item != null) {
+                    _addToCart(item);
+                  }
+                },
+              ),
             ),
           ),
         ),
@@ -322,7 +358,6 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
                 Expanded(flex: 4, child: Text('Tên thuốc', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold))),
                 Expanded(flex: 2, child: Center(child: Text('SL', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
                 Expanded(flex: 2, child: Center(child: Text('Đơn giá', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
-                Expanded(flex: 2, child: Center(child: Text('Giảm giá', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
                 Expanded(flex: 2, child: Align(alignment: Alignment.centerRight, child: Text('Tổng', style: TextStyle(color: _subtextColor, fontSize: 12, fontWeight: FontWeight.bold)))),
               ],
             ),
@@ -346,17 +381,6 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
                       flex: 4,
                       child: Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: _cardColor,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: _borderColor),
-                            ),
-                            child: Icon(Icons.image_outlined, color: _subtextColor, size: 20),
-                          ),
-                          const SizedBox(width: 8),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,11 +438,6 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
                     Expanded(
                       flex: 2,
                       child: Center(child: Text(_currencyFormat.format(item.inventory.sellingPrice), style: TextStyle(color: _textColor, fontSize: 12))),
-                    ),
-                    // Discount
-                    Expanded(
-                      flex: 2,
-                      child: Center(child: Text('0%', style: TextStyle(color: _textColor, fontSize: 12))),
                     ),
                     // Total
                     Expanded(
@@ -660,8 +679,6 @@ class _CreateSalesInvoiceScreenState extends State<CreateSalesInvoiceScreen> {
           child: Column(
             children: [
               _buildSummaryRow('Tạm tính (${_cart.length} thuốc)', _currencyFormat.format(_subtotal)),
-              const SizedBox(height: 8),
-              _buildSummaryRow('Giảm giá', '0'),
               const SizedBox(height: 8),
               _buildSummaryRow('Thuế (VAT 5%)', _currencyFormat.format(_tax)),
               Padding(

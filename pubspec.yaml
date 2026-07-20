@@ -39,6 +39,8 @@ dependencies:
   go_router: ^17.3.0
   fl_chart: ^1.2.0
   intl: ^0.20.2
+  dropdown_search: ^7.0.0
+  dropdown_button2: 2.3.9
 
 dev_dependencies:
   flutter_test:

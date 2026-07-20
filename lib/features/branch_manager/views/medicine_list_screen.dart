@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/medicine_service.dart';
 import 'package:pharmacy_chain_fe/shared/models/medicine_model.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class MedicineListScreen extends StatefulWidget {
   const MedicineListScreen({super.key});
@@ -14,6 +15,7 @@ class MedicineListScreen extends StatefulWidget {
 class _MedicineListScreenState extends State<MedicineListScreen> {
   final MedicineService _medicineService = MedicineService();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _categorySearchController = TextEditingController();
 
   List<MedicineModel> _medicines = [];
   List<CategoryModel> _categories = [];
@@ -376,11 +378,14 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
         border: Border.all(color: Colors.white.withAlpha(20)),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int?>(
+        child: DropdownButton2<int?>(
           value: _selectedCategoryId,
-          dropdownColor: const Color(0xFF111F38),
           hint: const Text('Chọn danh mục', style: TextStyle(color: Colors.white70, fontSize: 13)),
           isExpanded: true,
+          dropdownStyleData: const DropdownStyleData(
+            decoration: BoxDecoration(color: Color(0xFF111F38)),
+            maxHeight: 300,
+          ),
           style: const TextStyle(color: Colors.white, fontSize: 13),
           items: [
             const DropdownMenuItem<int?>(
@@ -392,6 +397,37 @@ class _MedicineListScreenState extends State<MedicineListScreen> {
                   child: Text(cat.categoryName),
                 )),
           ],
+          dropdownSearchData: DropdownSearchData(
+            searchController: _categorySearchController,
+            searchInnerWidgetHeight: 50,
+            searchInnerWidget: Container(
+              height: 50,
+              padding: const EdgeInsets.only(top: 8, bottom: 4, right: 8, left: 8),
+              child: TextFormField(
+                controller: _categorySearchController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  hintText: 'Tìm kiếm danh mục...',
+                  hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            searchMatchFn: (item, searchValue) {
+              if (item.value == null) return 'tất cả danh mục'.contains(searchValue.toLowerCase());
+              final cat = _categories.firstWhere((c) => c.categoryID == item.value);
+              return cat.categoryName.toLowerCase().contains(searchValue.toLowerCase());
+            },
+          ),
+          onMenuStateChange: (isOpen) {
+            if (!isOpen) {
+              _categorySearchController.clear();
+            }
+          },
           onChanged: (val) {
             setState(() {
               _selectedCategoryId = val;
