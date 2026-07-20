@@ -234,21 +234,23 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                       if (request.status == 'Pending') ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: DropdownButtonFormField<int>(
-                            isExpanded: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Nhà cung cấp (*)',
-                              border: OutlineInputBorder(),
-                            ),
-                            value: _selectedSuppliers[detail.purchaseRequestDetailId],
-                            items: _suppliers.map((s) => DropdownMenuItem<int>(
+                          child: DropdownMenu<int>(
+                            expandedInsets: EdgeInsets.zero,
+                            menuHeight: 300,
+                            label: const Text('Nhà cung cấp (*)'),
+                            enableFilter: true,
+                            enableSearch: true,
+                            initialSelection: _selectedSuppliers[detail.purchaseRequestDetailId],
+                            dropdownMenuEntries: _suppliers.map((s) => DropdownMenuEntry<int>(
                               value: s.id,
-                              child: Text(s.name, overflow: TextOverflow.ellipsis),
+                              label: s.name,
                             )).toList(),
-                            onChanged: (v) {
-                              setState(() {
-                                _selectedSuppliers[detail.purchaseRequestDetailId] = v;
-                              });
+                            onSelected: (v) {
+                              if (v != null) {
+                                setState(() {
+                                  _selectedSuppliers[detail.purchaseRequestDetailId] = v;
+                                });
+                              }
                             },
                           ),
                         ),
@@ -256,11 +258,11 @@ class _PurchaseRequestDetailScreenState extends State<PurchaseRequestDetailScree
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           child: TextFormField(
                             controller: _unitPriceControllers[detail.purchaseRequestDetailId],
-                            decoration: const InputDecoration(
-                              labelText: 'Đơn giá nhập (*)',
+                            decoration: InputDecoration(
+                              labelText: 'Đơn giá nhập / 1 ${detail.unit ?? 'đơn vị'} (*)',
                               hintText: 'Ví dụ: 150000',
                               suffixText: 'VNĐ',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.number,
                           ),
