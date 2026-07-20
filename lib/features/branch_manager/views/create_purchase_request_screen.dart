@@ -260,6 +260,7 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
           Expanded(
             flex: 3,
             child: DropdownButtonFormField<int>(
+              isExpanded: true,
               value: row.selectedMedicineId,
               dropdownColor: const Color(0xFF111F38),
               style: const TextStyle(color: Colors.white),
@@ -278,6 +279,7 @@ class _CreatePurchaseRequestScreenState extends State<CreatePurchaseRequestScree
                   child: Text(
                     '${m.medicineName} (Tồn: ${m.quantityInStock} ${m.unit})',
                     style: const TextStyle(fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 );
               }).toList(),
