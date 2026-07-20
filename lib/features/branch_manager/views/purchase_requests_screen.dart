@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/models/purchase_request_model.dart';
 import 'package:pharmacy_chain_fe/features/branch_manager/services/purchase_service.dart';
+import 'package:pharmacy_chain_fe/features/branch_manager/widgets/receive_po_dialog.dart';
 
 class PurchaseRequestsScreen extends StatefulWidget {
   const PurchaseRequestsScreen({super.key});
@@ -16,22 +18,43 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
 
+  // Pagination state
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _pageSize = 10;
+  int _totalRecords = 0;
+  bool _hasPrevious = false;
+  bool _hasNext = false;
+
   @override
   void initState() {
     super.initState();
     _fetchRequests();
   }
 
-  Future<void> _fetchRequests() async {
+  Future<void> _fetchRequests({bool resetPage = false}) async {
+    if (resetPage) {
+      _currentPage = 1;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final requests = await _purchaseService.getPurchaseRequests();
+      final pagedResponse = await _purchaseService.getPurchaseRequests(
+        pageNumber: _currentPage,
+        pageSize: _pageSize,
+      );
       setState(() {
-        _requests = requests;
+        _requests = pagedResponse.data;
+        _currentPage = pagedResponse.pageNumber;
+        _pageSize = pagedResponse.pageSize;
+        _totalRecords = pagedResponse.totalRecords;
+        _totalPages = pagedResponse.totalPages;
+        _hasPrevious = pagedResponse.hasPrevious;
+        _hasNext = pagedResponse.hasNext;
         _isLoading = false;
       });
     } catch (e) {
@@ -57,44 +80,21 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
     }
   }
 
-  void _showReceiveDialog(PurchaseRequestModel request) {
-    showDialog(
+  void _showReceiveDialog(PurchaseRequestModel request, PurchaseOrderSummaryModel po) async {
+    final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Nhận hàng - ${request.requestCode}'),
-        content: const Text('Bạn có chắc chắn muốn xác nhận nhận đủ số lượng lô hàng này không?\n\n(Hệ thống sẽ lấy dữ liệu lô thuốc đã được khai báo từ trước để cập nhật vào kho).'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(context); // Đóng dialog
-              setState(() => _isLoading = true);
-              try {
-                await _purchaseService.receiveMedicines(request.purchaseRequestId);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Nhận hàng thành công! Tồn kho đã được cập nhật.')),
-                  );
-                }
-                _fetchRequests(); // Tải lại danh sách
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
-                  );
-                }
-                setState(() => _isLoading = false);
-              }
-            },
-            child: const Text('Đồng ý Nhận'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (context) => ReceivePODialog(po: po),
     );
+
+    if (result == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nhận hàng thành công! Tồn kho đã được cập nhật.')),
+        );
+      }
+      _fetchRequests();
+    }
   }
 
   @override
@@ -108,11 +108,16 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _fetchRequests,
+            onPressed: () => _fetchRequests(resetPage: true),
           ),
         ],
       ),
-      body: _buildBody(),
+      body: Column(
+        children: [
+          Expanded(child: _buildBody()),
+          if (_requests.isNotEmpty) _buildPaginationControls(),
+        ],
+      ),
     );
   }
 
@@ -208,20 +213,50 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
                         ],
                       ),
                     )),
-                    if (request.status.toLowerCase() == 'approved') ...[
+                    if (request.purchaseOrders.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showReceiveDialog(request),
-                          icon: const Icon(Icons.download),
-                          label: const Text('NHẬN HÀNG'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
+                      const Text('Đơn đặt hàng (Từ NCC):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 8),
+                      ...request.purchaseOrders.map((po) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2A3F5F),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                      ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(po.supplierName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                                    Text('Mã PO: ${po.orderCode}', style: const TextStyle(color: Color(0xFF8FA8C9), fontSize: 12)),
+                                    Text('Trạng thái: ${po.deliveryStatus}', style: TextStyle(color: po.deliveryStatus == 'Received' ? Colors.green : Colors.orange, fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                              if (po.deliveryStatus == 'Pending' || po.deliveryStatus == 'Confirmed' || po.deliveryStatus == 'Delivered')
+                                ElevatedButton(
+                                  onPressed: () => _showReceiveDialog(request, po),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  child: const Text('Nhận hàng', style: TextStyle(fontSize: 12)),
+                                )
+                              else if (po.deliveryStatus == 'Received')
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  child: Text('Đã nhận', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
                     ],
                   ],
                 ),
@@ -231,6 +266,74 @@ class _PurchaseRequestsScreenState extends State<PurchaseRequestsScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildPaginationControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: const Color(0xFF111F38),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Previous button
+          ElevatedButton(
+            onPressed: _hasPrevious && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                    _fetchRequests();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.chevron_left, size: 18),
+                Text('Trước', style: TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+          
+          // Page Indicator
+          Text(
+            'Trang $_currentPage / ${math.max(1, _totalPages)}\n(Tổng: $_totalRecords)',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+          ),
+          
+          // Next button
+          ElevatedButton(
+            onPressed: _hasNext && !_isLoading
+                ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                    _fetchRequests();
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C48C).withAlpha(50),
+              disabledBackgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Row(
+              children: [
+                Text('Sau', style: TextStyle(fontSize: 12)),
+                Icon(Icons.chevron_right, size: 18),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
