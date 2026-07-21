@@ -15,10 +15,11 @@ class BaseApiResponse<T> {
     Map<String, dynamic> json,
     T Function(Object? json)? fromJsonT,
   ) {
+    final isSuccess = json['success'] as bool? ?? false;
     return BaseApiResponse<T>(
-      success: json['success'] as bool? ?? false,
+      success: isSuccess,
       message: json['message'] as String? ?? '',
-      data: (json['data'] != null && fromJsonT != null)
+      data: (isSuccess && json['data'] != null && fromJsonT != null)
           ? fromJsonT(json['data'])
           : null,
       timestamp: json['timestamp'] as String? ?? '',
