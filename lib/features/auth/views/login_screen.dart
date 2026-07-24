@@ -352,23 +352,6 @@ class _LoginScreenState extends State<LoginScreen>
               },
               onChanged: (_) => _clearError(),
             ),
-            const SizedBox(height: 12),
-
-            // ── Forgot password ───────────────────────────────────
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
-                onTap: () {}, // TODO: Forgot password flow
-                child: Text(
-                  'Quên mật khẩu?',
-                  style: TextStyle(
-                    color: const Color(0xFF60ABFF),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 24),
 
             // ── Error message ─────────────────────────────────────
